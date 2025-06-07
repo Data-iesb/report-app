@@ -1,4 +1,5 @@
 [theme]
+base = "light"
 primaryColor = "#f8f9fa"              # Bootstrap primary blue
 backgroundColor = "#f8f9fa"           # Light gray
 secondaryBackgroundColor = "#dc3545"  # 🔴 Red sidebar (Bootstrap 'danger')
