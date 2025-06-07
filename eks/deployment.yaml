@@ -10,7 +10,7 @@ metadata:
     keel.sh/approvals: "none"
 
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: report-app

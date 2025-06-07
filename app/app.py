@@ -38,6 +38,7 @@ def main():
 
     logo_url = "https://dataiesb-site.s3.us-east-1.amazonaws.com/logo.png"
     target_url = "http://k8s-default-ingressi-73bd0705e3-102651203.sa-east-1.elb.amazonaws.com/"
+    st.markdown(f'<link href=""https://dataiesb-site.s3.sa-east-1.amazonaws.com/style.css" rel="stylesheet">', unsafe_allow_html=True)
 
     st.sidebar.markdown(
         f"""
@@ -72,10 +73,10 @@ def main():
     report_id = st.query_params.get("rel")
 
     if report_id:
-        #st.markdown(f"### Carregando relatório: `{report_id}`")
+        st.markdown(f"### Carregando relatório: `{report_id}`")
         load_and_execute_report(report_id)
     else:
-        st.title("📊 - Central de Relatórios Dinâmicos")
+        st.title("Central de Relatórios Dinâmicos📊" )
         st.markdown("Escolha um relatório no menu à esquerda.")
 
 if __name__ == "__main__":
