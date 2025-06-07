@@ -35,24 +35,23 @@ def load_and_execute_report(report_id):
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
 
-    st.sidebar.image("logo.png", use_container_width=True)
-
+        # Make the logo clickable by wrapping it in an anchor tag with HTML
     st.sidebar.markdown(
         """
-        <h1 style="color: white; margin-top: 1rem;">
-            📂 Relatórios Disponíveis
-        </h1>
+        <a href="http://k8s-default-ingressi-73bd0705e3-102651203.sa-east-1.elb.amazonaws.com/" target="_blank">
+            <img src="logo.png" style="width:100%;">
+        </a>
         """,
         unsafe_allow_html=True
     )
 
     reports = list_reports_in_s3()
 
-    for r in reports:
-        st.sidebar.markdown(
-            f"""<a href="?rel={r}" style="color:white; text-decoration:none;">📄 {r.replace('-', ' ').title()}</a>""",
-            unsafe_allow_html=True
-         )
+#    for r in reports:
+#        st.sidebar.markdown(
+#            f"""<a href="?rel={r}" style="color:white; text-decoration:none;">📄 {r.replace('-', ' ').title()}</a>""",
+#            unsafe_allow_html=True
+#         )
 
 
     report_id = st.query_params.get("rel")
