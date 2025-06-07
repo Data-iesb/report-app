@@ -50,11 +50,23 @@ def main():
 
     reports = list_reports_in_s3()
 
-#    for r in reports:
-#        st.sidebar.markdown(
-#            f"""<a href="?rel={r}" style="color:white; text-decoration:none;">📄 {r.replace('-', ' ').title()}</a>""",
-#            unsafe_allow_html=True
-#         )
+    # Centered report links
+    st.markdown(
+        "<h3 style='text-align: center;'>Relatórios Disponíveis</h3>",
+        unsafe_allow_html=True
+    )
+
+    for r in reports:
+        st.markdown(
+            f"""
+            <div style='text-align: center; margin-bottom: 10px;'>
+                <a href="?rel={r}" style="color:#0366d6; font-size:18px; text-decoration:none;">
+                    📄 {r.replace('-', ' ').title()}
+                </a>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
 
 
     report_id = st.query_params.get("rel")
