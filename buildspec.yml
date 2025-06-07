@@ -1,6 +1,27 @@
 version: 0.2
 
+env:
+  variables:
+    REGION: "sa-east-1"
+    ACCOUNT_ID: "248189947068"
+    CLUSTER_NAME: "sas-6881323-eks"
+    REPOSITORY: "report-app"
+    DEPLOYMENT_NAME: "report-app"
+    CONTAINER_NAME: "report-app"
+
 phases:
+  install:
+    runtime-versions:
+      python: 3.11
+    commands:
+      - echo Installing kubectl...
+      - curl -LO "https://dl.k8s.io/release/v1.29.0/bin/linux/amd64/kubectl"
+      - chmod +x kubectl
+      - mv kubectl /usr/local/bin/
+      - echo Verifying kubectl...
+      - kubectl version --client
+      - pip install --upgrade awscli
+
   pre_build:
     commands:
       - echo Logging in to Amazon ECR...
@@ -25,6 +46,9 @@ phases:
       - echo "Copying all files from report-manual-sync/ to S3..."
       - aws s3 cp report-manual-sync/ s3://dataiesb-site/ --recursive
       - echo "S3 copy complete."
+      - echo Updating deployment in EKS...
+      - kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$REPOSITORY_URI:$IMAGE_TAG -n default
+      - kubectl rollout status deployment/$DEPLOYMENT_NAME -n default
 
 artifacts:
   files:
