@@ -2,9 +2,9 @@ boto3
 streamlit
 pandas
 plotly
-#numpy
-#pydeck 
-#scipy 
-#psycopg2-binary
-#sqlalchemy
-#folium
+numpy
+pydeck 
+scipy 
+psycopg2-binary
+sqlalchemy
+folium
