@@ -30,6 +30,8 @@ phases:
 
       - REPOSITORY_URI=248189947068.dkr.ecr.us-east-1.amazonaws.com/report-app
       - IMAGE_TAG=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - echo Updating kubeconfig for EKS...
+      - aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME
 
   build:
     commands:
