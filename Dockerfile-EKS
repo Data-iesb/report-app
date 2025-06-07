@@ -1,0 +1,51 @@
+# Use the official Python image
+FROM public.ecr.aws/docker/library/python:3.10-slim
+
+# Define build arguments
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+ARG AWS_DEFAULT_REGION=us-east-1  # Provide a default if desired
+
+# Set environment variables using the build arguments
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+ENV AWS_CONFIG_FILE=/home/appuser/.aws/config
+
+ENV AWS_SHARED_CREDENTIALS_FILE=/home/appuser/.aws/credentials
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libexpat1 \
+    vim \
+    curl \
+    libpq-dev \
+    gcc
+
+# Set work directory and copy app
+WORKDIR /app
+COPY app/ ./
+
+# Install all dependencies (including streamlit) globally
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create appuser and inject credentials using ENV variables
+RUN useradd -ms /bin/bash appuser && \
+    mkdir -p /home/appuser/.aws && \
+    echo "[default]" > /home/appuser/.aws/credentials && \
+    echo "aws_access_key_id = ${AWS_ACCESS_KEY_ID}" >> /home/appuser/.aws/credentials && \
+    echo "aws_secret_access_key = ${AWS_SECRET_ACCESS_KEY}" >> /home/appuser/.aws/credentials && \
+    echo "[default]" > /home/appuser/.aws/config && \
+    echo "region = ${AWS_DEFAULT_REGION}" >> /home/appuser/.aws/config && \
+    chown -R appuser:appuser /home/appuser && \
+    chown -R appuser:appuser /app
+
+# Switch to non-root user
+USER appuser
+WORKDIR /app
+
+# Expose Streamlit port
+EXPOSE 8501
+
+# Start the app
+CMD ["streamlit", "run", "app.py", "--server.baseUrlPath=/report", "--server.enableCORS=false"]
