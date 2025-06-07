@@ -9,3 +9,5 @@ scipy
 psycopg2-binary
 sqlalchemy
 folium
+fsspec 
+s3fs
