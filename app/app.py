@@ -77,7 +77,7 @@ def main():
         load_and_execute_report(report_id)
     else:
         st.title("Central de Relatórios Dinâmicos📊" )
-        st.markdown("Escolha um relatório no menu à esquerda.")
+        st.markdown("Escolha um relatório abaixo.")
 
 if __name__ == "__main__":
     main()
