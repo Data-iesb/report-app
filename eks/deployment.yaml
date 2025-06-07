@@ -4,6 +4,11 @@ metadata:
   name: report-app
   labels:
     app: report-app
+  annotations:
+    keel.sh/policy: force
+    keel.sh/trigger: webhook
+    keel.sh/approvals: "none"
+
 spec:
   replicas: 1
   selector:
