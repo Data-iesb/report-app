@@ -1,0 +1,8 @@
+numpy
+pandas
+plotly
+pydeck 
+scipy 
+psycopg2
+sqlalchemy
+folium

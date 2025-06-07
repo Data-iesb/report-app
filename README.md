@@ -1,2 +1,3 @@
-# report-app
-Aplicativo para postagens de relatórios, essa ferramenta se  integra ao S3 e visa simplificar o projeto do DataIESB.
+# ❌ Remova este método do seu código caso ele exista
+st.set_page_config
+
