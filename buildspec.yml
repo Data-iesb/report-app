@@ -22,6 +22,9 @@ phases:
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       - docker push $REPOSITORY_URI:latest
       - echo Build completed on `date`
+      - echo "Copying all files from report-manual-sync/ to S3..."
+      - aws s3 cp report-manual-sync/ s3://dataiesb-site/ --recursive
+      - echo "S3 copy complete."
 
 artifacts:
   files:
