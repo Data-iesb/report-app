@@ -35,11 +35,14 @@ def load_and_execute_report(report_id):
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
 
-        # Make the logo clickable by wrapping it in an anchor tag with HTML
+
+    logo_url = "https://dataiesb-site.s3.us-east-1.amazonaws.com/logo.png"
+    target_url = "http://k8s-default-ingressi-73bd0705e3-102651203.sa-east-1.elb.amazonaws.com/"
+
     st.sidebar.markdown(
-        """
-        <a href="http://k8s-default-ingressi-73bd0705e3-102651203.sa-east-1.elb.amazonaws.com/" target="_blank">
-            <img src="logo.png" style="width:100%;">
+        f"""
+        <a href="{target_url}" target="_blank">
+            <img src="{logo_url}" style="width:100%;">
         </a>
         """,
         unsafe_allow_html=True
