@@ -21,7 +21,7 @@ spec:
     spec:
       serviceAccountName: streamlit-app-sa  # Use the IRSA-enabled service account
       containers:
-        - name: streamlit
+        - name: report-app
           image: 248189947068.dkr.ecr.us-east-1.amazonaws.com/report-app:latest
           ports:
             - containerPort: 8501
