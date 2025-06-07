@@ -42,22 +42,17 @@ def show_homepage(reports):
         st.warning("⚠️ Nenhum relatório disponível no momento.")
         return
 
-    # Create a clean 2-column layout
-    st.markdown("<h3 style='text-align: center;'>Relatórios Disponíveis</h3>", unsafe_allow_html=True)
-    cols = st.columns(2)
-    for i, report in enumerate(reports):
-        col = cols[i % 2]
-        with col:
-            st.markdown(
-                f"""
-                <div style='margin-bottom: 1rem;'>
-                    <a href="?rel={report}" style="color:#0d6efd; font-size:16px; text-decoration:none;">
-                        📄 {report.replace('-', ' ').title()}
-                    </a>
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+    st.markdown("### 📋 Relatórios Disponíveis")
+
+    # Create a Markdown table with links
+    table_md = "| Relatório |\n|:----------|\n"
+    for report in reports:
+        name = report.replace("-", " ").title()
+        link = f"[📄 {name}](?rel={report})"
+        table_md += f"| {link} |\n"
+
+    st.markdown(table_md, unsafe_allow_html=True)
+
 
 
 
