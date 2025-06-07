@@ -1,24 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: govsananga-deployment
+  name: report-app
   labels:
-    app: govsananga
+    app: report-app
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: govsananga
+      app: report-app
   template:
     metadata:
       labels:
-        app: govsananga
+        app: report-app
     spec:
+      serviceAccountName: streamlit-app-sa  # Use the IRSA-enabled service account
       containers:
-      - name: govsananga
-        image: 248189947068.dkr.ecr.us-east-1.amazonaws.com/govsananga:latest
-        ports:
-        - containerPort: 8501
-        env:
-        - name: AWS_DEFAULT_REGION
-          value: "us-east-1"
+        - name: streamlit
+          image: 248189947068.dkr.ecr.us-east-1.amazonaws.com/report-app:latest
+          ports:
+            - containerPort: 8501
+          env:
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
