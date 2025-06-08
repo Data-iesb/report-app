@@ -46,7 +46,7 @@ phases:
       - docker push $REPOSITORY_URI:latest
       - echo Build completed on `date`
       - echo "Copying all files from report-manual-sync/ to S3..."
-      - aws s3 cp report-manual-sync/ s3://dataiesb/ --recursive
+      - aws s3 cp src/ s3://dataiesb/ --recursive
       - echo "S3 copy complete."
       - echo Updating deployment in EKS...
       - kubectl set image deployment/$DEPLOYMENT_NAME $CONTAINER_NAME=$REPOSITORY_URI:$IMAGE_TAG -n default
