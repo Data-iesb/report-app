@@ -1,0 +1,10 @@
+/* style.css */
+.stMultiSelect > div > div {
+    background-color: white !important;
+    color: black !important;
+}
+.stTextInput input {
+    background-color: white !important;
+    color: black !important;
+}
+
