@@ -63,7 +63,7 @@ def main():
     st.markdown(f'<link href="{css_url}" rel="stylesheet">', unsafe_allow_html=True)
 
     # Sidebar logo
-    logo_url = "https://dataiesb-site.s3.us-east-1.amazonaws.com/logo.png"
+    logo_url = "https://dataiesb.s3.us-east-1.amazonaws.com/logo.png"
     target_url = "http://dataiesb.s3-website-us-east-1.amazonaws.com"
     st.sidebar.markdown(
         f"""
