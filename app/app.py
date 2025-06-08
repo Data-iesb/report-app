@@ -64,7 +64,7 @@ def main():
 
     # Sidebar logo
     logo_url = "https://dataiesb-site.s3.us-east-1.amazonaws.com/logo.png"
-    target_url = "http://k8s-default-ingressi-73bd0705e3-102651203.sa-east-1.elb.amazonaws.com/"
+    target_url = "http://dataiesb.s3-website-us-east-1.amazonaws.com"
     st.sidebar.markdown(
         f"""
         <a href="{target_url}" target="_blank">
