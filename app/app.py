@@ -3,6 +3,7 @@ import boto3
 import tempfile
 
 S3_BUCKET = "dataiesb"
+s3_client = boto3.client('s3')
 
 def list_reports_in_s3():
     """List all folders in S3 that contain main.py"""
