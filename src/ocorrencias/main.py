@@ -3,7 +3,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.io as pio
 
-ocorrencias = pd.read_csv('s3://dataiesb-site/ocorrencias/ocorrencias_ride_2020_2024_novembro.csv')
+ocorrencias = pd.read_csv('s3://dataiesb/ocorrencias/ocorrencias_ride_2020_2024_novembro.csv')
 
 # Remover colunas desnecessárias
 ocorrencias.drop(['agente', 'arma', 'faixa_etaria', 'total_peso', 'formulario', 'abrangencia'], axis=1, inplace=True)

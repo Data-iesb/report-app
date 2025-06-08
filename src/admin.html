@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Admin - DataIESB</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://dataiesb.s3.amazonaws.com/style.css">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-danger px-4">
+    <div class="container-fluid">
+      <a class="navbar-brand text-white" href="index.html">IESB BigData Lab</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Relatórios</a></li>
+          <li class="nav-item"><a class="nav-link" href="login.html" onclick="logout()">Sair</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container my-5 flex-grow-1 text-center">
+    <div id="adminContent" class="p-4 border rounded bg-light">
+      <h3>Verificação de Login</h3>
+      <p id="loginStatus">Verificando autenticação...</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="py-4 text-center text-muted">
+    © 2025 DataIESB
+  </footer>
+
+  <script>
+    function logout() {
+      localStorage.removeItem("idToken");
+    }
+
+    function verifyLogin() {
+      const token = localStorage.getItem("idToken");
+      const status = document.getElementById("loginStatus");
+
+      if (!token) {
+        status.textContent = "Você não está autenticado. Redirecionando para o login...";
+        setTimeout(() => window.location.href = "login.html", 2000);
+        return;
+      }
+
+      // In production, verify token with backend or decode/validate
+      status.textContent = "Você está autenticado com sucesso.";
+    }
+
+    window.onload = verifyLogin;
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
