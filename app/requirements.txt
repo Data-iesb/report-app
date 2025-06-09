@@ -9,6 +9,6 @@ s3fs
 #numpy
 #pydeck 
 #scipy 
-#psycopg2-binary
+psycopg2-binary
 #sqlalchemy
 #folium
