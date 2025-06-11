@@ -1,6 +1,7 @@
 [theme]
-primaryColor = "#f8f9fa"              # Bootstrap primary blue
-backgroundColor = "#f8f9fa"           # Light gray
-secondaryBackgroundColor = "#F0F2F6"  # Default Streamlit sidebar gray
-textColor = "#212529"                 # Soft black (Bootstrap dark)
+primaryColor = "#d72638"              # Bold modern red
+backgroundColor = "#f4f4f5"           # Soft neutral gray (not pure white)
+secondaryBackgroundColor = "#e5e5e5"  # Subtle contrast for sidebar, etc.
+textColor = "#212529"                 # Bootstrap dark – very readable
 font = "sans serif"
+
