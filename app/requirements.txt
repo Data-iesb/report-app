@@ -5,10 +5,10 @@ plotly
 plotly.express
 fsspec 
 s3fs
+psycopg2-binary
+sqlalchemy
 
 #numpy
 #pydeck 
 #scipy 
-psycopg2-binary
-#sqlalchemy
 #folium
