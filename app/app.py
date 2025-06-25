@@ -64,7 +64,7 @@ def main():
 
     # Sidebar logo
     logo_url = "https://d28lvm9jkyfotx.cloudfront.net/logo.png"
-    target_url = "dataiesb.com"
+    target_url = "https://d28lvm9jkyfotx.cloudfront.net"
     st.sidebar.markdown(
         f"""
         <a href="{target_url}" target="_blank">
