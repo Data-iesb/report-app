@@ -59,12 +59,12 @@ def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
 
     # Load external CSS
-    css_url = "https://dataiesb-site.s3.us-east-1.amazonaws.com/style.css"
+    css_url = "https://d28lvm9jkyfotx.cloudfront.net/style.css"
     st.markdown(f'<link href="{css_url}" rel="stylesheet">', unsafe_allow_html=True)
 
     # Sidebar logo
-    logo_url = "https://dataiesb.s3.us-east-1.amazonaws.com/logo.png"
-    target_url = "http://dataiesb.s3-website-us-east-1.amazonaws.com"
+    logo_url = "https://d28lvm9jkyfotx.cloudfront.net/logo.png"
+    target_url = "dataiesb.com"
     st.sidebar.markdown(
         f"""
         <a href="{target_url}" target="_blank">
