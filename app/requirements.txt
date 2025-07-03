@@ -7,6 +7,9 @@ fsspec
 s3fs
 psycopg2-binary
 sqlalchemy
+altair>=5.2
+geopandas>=0.14
+shapely>=2.0
 
 #numpy
 #pydeck 
