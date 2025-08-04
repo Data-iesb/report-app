@@ -59,32 +59,45 @@ def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
 
     st.markdown("""
-        <style>
-        /* Corrige a cor do texto em inputs da sidebar */
-        section[data-testid="stSidebar"] .stSelectbox,
-        section[data-testid="stSidebar"] .stMultiSelect,
-        section[data-testid="stSidebar"] .stSlider,
-        section[data-testid="stSidebar"] label,
-        section[data-testid="stSidebar"] span {
-            color: #FFFFFF !important;
-        }
+    <style>
+    /* Aplica cor branca em toda a sidebar */
+    section[data-testid="stSidebar"] {
+        color: #FFFFFF;
+    }
 
-        /* Corrige o número e texto do slider */
-        section[data-testid="stSidebar"] .stSlider > div > div {
-            color: #FFCDD2 !important; /* rosa claro para contraste */
-        }
+    /* Corrige texto de widgets: select, multiselect, sliders */
+    section[data-testid="stSidebar"] .stSelectbox div,
+    section[data-testid="stSidebar"] .stMultiSelect div,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] span {
+        color: #FFFFFF !important;
+    }
 
-        /* Corrige a cor da linha da seleção (dropdown open) */
-        section[data-testid="stSidebar"] .css-1wa3eu0-placeholder {
-            color: #FFFFFF !important;
-        }
+    /* Corrige valores e labels dos sliders */
+    section[data-testid="stSidebar"] .stSlider > div > div,
+    section[data-testid="stSidebar"] .stSlider label,
+    section[data-testid="stSidebar"] .stSlider span {
+        color: #FFFFFF !important;
+    }
 
-        /* Corrige hover nos menus dropdown */
-        section[data-testid="stSidebar"] .css-1n76uvr-option {
-            color: #1D345B !important;
-        }
-        </style>
-    """, unsafe_allow_html=True)
+    /* Corrige headings invisíveis (como st.header/st.subheader na sidebar) */
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] h4,
+    section[data-testid="stSidebar"] h5,
+    section[data-testid="stSidebar"] h6,
+    section[data-testid="stSidebar"] p {
+        color: #FFFFFF !important;
+    }
+
+    /* Placeholders (texto "Escolha múltiplas...") */
+    section[data-testid="stSidebar"] .css-1wa3eu0-placeholder {
+        color: #FFFFFF !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 
 
 
