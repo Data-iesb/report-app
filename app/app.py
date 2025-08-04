@@ -58,19 +58,16 @@ def show_homepage(reports):
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
 
-    # Inject CSS for specific text styling on blue backgrounds
     st.markdown("""
         <style>
-        .blue-bg-text {
-            color: #FFD700 !important;
+        /* Garante visibilidade do texto do menu superior */
+        .css-1v0mbdj, .css-164nlkn {
+            color: #1D345B !important;
             font-weight: bold;
         }
         </style>
     """, unsafe_allow_html=True)
 
-#    # Load external CSS
-#    css_url = "https://d28lvm9jkyfotx.cloudfront.net/style.css"
-#    st.markdown(f'<link href="{css_url}" rel="stylesheet">', unsafe_allow_html=True)
 
     # Sidebar logo
     logo_url = "https://d28lvm9jkyfotx.cloudfront.net/logo.png"
