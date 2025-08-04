@@ -1,7 +1,28 @@
 [theme]
-primaryColor = "#1D345B"              
-backgroundColor = "#f4f4f5"           
-secondaryBackgroundColor = "#1D345B"  
-textColor = "#1D345B"                
+# Cor principal usada em botões, sliders, barras ativas etc.
+primaryColor = "#1D345B"
+
+# Cor de fundo principal da aplicação (páginas, painéis)
+backgroundColor = "#F4F4F5"
+
+# Cor de fundo para áreas como sidebar, caixas de seleção etc.
+secondaryBackgroundColor = "#1D345B"
+
+# Cor do texto padrão
+textColor = "#FFFFFF"
+
+# Fonte geral (opções: "sans serif", "serif", "monospace")
 font = "sans serif"
+
+# Cor para elementos em destaque (você pode usar para métricas ou alertas, por ex.)
+# highlightColor = "#FFD700"  # opcional
+
+# Cor do texto dos títulos (opcional – requer uso de CSS se quiser controlar separadamente)
+# headingColor = "#FFFFFF"  # opcional
+
+# Estilo de bordas (não é nativo do config.toml, mas pode ser usado via CSS externo)
+# roundedCorners = true  # usar com CSS
+
+# Use com um CSS personalizado se quiser aplicar animações, sombras, etc.
+# Exemplo: carregar com st.markdown() no início do app.
 
