@@ -1,7 +1,7 @@
 [theme]
-primaryColor = "#d72638"              # Bold modern red
+primaryColor = "#1D345B"              # Bold modern red
 backgroundColor = "#f4f4f5"           # Soft neutral gray (not pure white)
-secondaryBackgroundColor = "#d4d2d2"  # Subtle contrast for sidebar, etc.
+secondaryBackgroundColor = "#D13F42"  # Subtle contrast for sidebar, etc.
 textColor = "#212529"                 # Bootstrap dark – very readable
 font = "sans serif"
 
