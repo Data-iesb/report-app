@@ -1,7 +1,7 @@
 [theme]
 primaryColor = "#1D345B"              
-backgroundColor = "#f4f4f5"           # Soft neutral gray (not pure white)
-secondaryBackgroundColor = "#D13F42"  # Subtle contrast for sidebar, etc.
-textColor = "#212529"                 # Bootstrap dark – very readable
+backgroundColor = "#f4f4f5"           
+secondaryBackgroundColor = "#1D345B"  
+textColor = "#212529"                
 font = "sans serif"
 
