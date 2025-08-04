@@ -60,13 +60,32 @@ def main():
 
     st.markdown("""
         <style>
-        /* Garante visibilidade do texto do menu superior */
-        .css-1v0mbdj, .css-164nlkn {
+        /* Corrige a cor do texto em inputs da sidebar */
+        section[data-testid="stSidebar"] .stSelectbox,
+        section[data-testid="stSidebar"] .stMultiSelect,
+        section[data-testid="stSidebar"] .stSlider,
+        section[data-testid="stSidebar"] label,
+        section[data-testid="stSidebar"] span {
+            color: #FFFFFF !important;
+        }
+
+        /* Corrige o número e texto do slider */
+        section[data-testid="stSidebar"] .stSlider > div > div {
+            color: #FFCDD2 !important; /* rosa claro para contraste */
+        }
+
+        /* Corrige a cor da linha da seleção (dropdown open) */
+        section[data-testid="stSidebar"] .css-1wa3eu0-placeholder {
+            color: #FFFFFF !important;
+        }
+
+        /* Corrige hover nos menus dropdown */
+        section[data-testid="stSidebar"] .css-1n76uvr-option {
             color: #1D345B !important;
-            font-weight: bold;
         }
         </style>
     """, unsafe_allow_html=True)
+
 
 
     # Sidebar logo
