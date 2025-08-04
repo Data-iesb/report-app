@@ -68,9 +68,9 @@ def main():
         </style>
     """, unsafe_allow_html=True)
 
-    # Load external CSS
-    css_url = "https://d28lvm9jkyfotx.cloudfront.net/style.css"
-    st.markdown(f'<link href="{css_url}" rel="stylesheet">', unsafe_allow_html=True)
+#    # Load external CSS
+#    css_url = "https://d28lvm9jkyfotx.cloudfront.net/style.css"
+#    st.markdown(f'<link href="{css_url}" rel="stylesheet">', unsafe_allow_html=True)
 
     # Sidebar logo
     logo_url = "https://d28lvm9jkyfotx.cloudfront.net/logo.png"
