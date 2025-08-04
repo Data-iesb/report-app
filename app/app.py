@@ -60,6 +60,8 @@ def main():
 
     st.markdown("""
     <style>
+    /* ========== SIDEBAR ========== */
+
     /* Aplica cor branca em toda a sidebar */
     section[data-testid="stSidebar"] {
         color: #FFFFFF;
@@ -95,8 +97,42 @@ def main():
     section[data-testid="stSidebar"] .css-1wa3eu0-placeholder {
         color: #FFFFFF !important;
     }
+
+    /* ========== FORA DA SIDEBAR ========== */
+
+    /* Corrige texto em botões, selects, inputs fora da sidebar */
+    .stButton > button,
+    .stSelectbox div,
+    .stMultiSelect div,
+    .stTextInput input,
+    .stTextArea textarea {
+        color: #FFFFFF !important;
+    }
+
+    /* Corrige opção selecionada (como Centro-Oeste) */
+    .css-1d391kg, .css-1cpxqw2 {
+        color: #FFFFFF !important;
+    }
+
+    /* Corrige labels de campos fora da sidebar */
+    label, .stSelectbox label {
+        color: #1D345B !important;
+        font-weight: bold;
+    }
+
+    /* Corrige borda do selectbox */
+    .stSelectbox > div {
+        border: 1px solid #D32F2F !important;
+        border-radius: 8px;
+    }
+
+    /* Corrige itens do dropdown (quando expandido) */
+    .css-1n76uvr-option {
+        color: #1D345B !important;
+    }
     </style>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+
 
 
 
