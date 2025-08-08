@@ -47,11 +47,11 @@ def show_homepage(reports):
     table_md = "| Relatório |\n|:----------|\n"
     for report in reports:
         name = report.replace("-", " ").title()
-        link = f"[📄 {name}](?rel={report})"
+        # Adjust URL format to use 'id' instead of 'rel'
+        link = f"[📄 {name}](?id={report})"
         table_md += f"| {link} |\n"
 
     st.markdown(table_md, unsafe_allow_html=True)
-
 
 
 
