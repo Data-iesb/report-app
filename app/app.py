@@ -1,6 +1,6 @@
 import streamlit as st
+import pandas as pd
 import boto3
-import tempfile
 import json
 
 S3_BUCKET = "dataiesb"
@@ -24,7 +24,13 @@ def list_reports_in_s3(reports_json):
 def load_and_execute_report(report_id, reports_json):
     """Download and execute the main.py script from S3"""
     try:
-        report = reports_json[report_id]
+        # Look up the report by its ID in the JSON data
+        report = reports_json.get(str(report_id))
+        if not report:
+            st.error(f"❌ Relatório não encontrado para o ID: {report_id}")
+            return
+        
+        # Get the S3 path for the main.py script
         s3_key = f"{report['id_s3']}main.py"
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".py", delete=False) as tmp:
             s3_client.download_fileobj(S3_BUCKET, s3_key, tmp)
@@ -39,26 +45,29 @@ def load_and_execute_report(report_id, reports_json):
 def show_homepage(reports_json):
     st.title("Central de Relatórios Dinâmicos 📊")
     st.markdown("Escolha um relatório abaixo.")
-
-    reports = list_reports_in_s3(reports_json)
-
-    if not reports:
-        st.warning("⚠️ Nenhum relatório disponível no momento.")
-        return
-
-    st.markdown("### 📋 Relatórios Disponíveis")
-
-    # Create a Markdown table with links and descriptions
-    table_md = "| Relatório | Descrição | Autor |\n|:----------|:----------|:-------|\n"
-    for report_id in reports:
-        report = reports_json[report_id]
-        name = report["titulo"]
-        description = report["descricao"]
-        author = report["autor"]
-        link = f"[📄 {name}](?id={report_id})"
-        table_md += f"| {link} | {description} | {author} |\n"
-
-    st.markdown(table_md, unsafe_allow_html=True)
+    
+    # Convert the reports_json dictionary into a pandas DataFrame
+    data = []
+    for report_id, report_data in reports_json.items():
+        if not report_data["deletado"]:
+            data.append({
+                "ID": report_id,
+                "Título": report_data["titulo"],
+                "Descrição": report_data["descricao"],
+                "Autor": report_data["autor"]
+            })
+    
+    df = pd.DataFrame(data)
+    
+    # Display the DataFrame in Streamlit with clickable links
+    st.write("### Relatórios Disponíveis")
+    st.dataframe(df)
+    
+    # Make the DataFrame rows clickable
+    selected_row = st.selectbox("Escolha um relatório", df["Título"])
+    if selected_row:
+        report_id = df[df["Título"] == selected_row]["ID"].values[0]
+        load_and_execute_report(report_id, reports_json)
 
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
@@ -139,7 +148,6 @@ def main():
         load_and_execute_report(report_id, reports_json)
     else:
         show_homepage(reports_json)
-
 
 if __name__ == "__main__":
     main()
