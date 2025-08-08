@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import boto3
 import json
+import tempfile  # <-- Add this import
 
 S3_BUCKET = "dataiesb"
 s3_client = boto3.client('s3')
