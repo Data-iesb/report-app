@@ -1,27 +1,31 @@
 import streamlit as st
 import boto3
 import tempfile
+import json
 
 S3_BUCKET = "dataiesb"
 s3_client = boto3.client('s3')
 
-def list_reports_in_s3():
-    """List all folders in S3 that contain main.py"""
-    reports = []
-    paginator = s3_client.get_paginator("list_objects_v2")
-    for page in paginator.paginate(Bucket=S3_BUCKET):
-        for obj in page.get("Contents", []):
-            key = obj["Key"]
-            if key.endswith("main.py"):
-                report_id = key.rsplit("/", 1)[0]
-                reports.append(report_id)
-    return sorted(set(reports))
-
-
-def load_and_execute_report(report_id):
-    """Download and execute a main.py script from S3"""
-    s3_key = f"{report_id}/main.py"
+def load_reports_json():
+    """Fetch reports.json from S3"""
     try:
+        # Load the reports.json from S3
+        response = s3_client.get_object(Bucket=S3_BUCKET, Key="reports.json")
+        reports_json = json.loads(response["Body"].read())
+        return reports_json
+    except Exception as e:
+        st.error(f"❌ Erro ao carregar o arquivo 'reports.json': {e}")
+        return {}
+
+def list_reports_in_s3(reports_json):
+    """List reports from the loaded JSON data"""
+    return [report_id for report_id in reports_json if not reports_json[report_id]["deletado"]]
+
+def load_and_execute_report(report_id, reports_json):
+    """Download and execute the main.py script from S3"""
+    try:
+        report = reports_json[report_id]
+        s3_key = f"{report['id_s3']}main.py"
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".py", delete=False) as tmp:
             s3_client.download_fileobj(S3_BUCKET, s3_key, tmp)
             tmp_path = tmp.name
@@ -32,10 +36,11 @@ def load_and_execute_report(report_id):
     except Exception as e:
         st.error(f"❌ Erro ao carregar o relatório '{report_id}': {e}")
 
-
-def show_homepage(reports):
+def show_homepage(reports_json):
     st.title("Central de Relatórios Dinâmicos 📊")
     st.markdown("Escolha um relatório abaixo.")
+
+    reports = list_reports_in_s3(reports_json)
 
     if not reports:
         st.warning("⚠️ Nenhum relatório disponível no momento.")
@@ -43,17 +48,17 @@ def show_homepage(reports):
 
     st.markdown("### 📋 Relatórios Disponíveis")
 
-    # Create a Markdown table with links
-    table_md = "| Relatório |\n|:----------|\n"
-    for report in reports:
-        name = report.replace("-", " ").title()
-        # Adjust URL format to use 'id' instead of 'rel'
-        link = f"[📄 {name}](?id={report})"
-        table_md += f"| {link} |\n"
+    # Create a Markdown table with links and descriptions
+    table_md = "| Relatório | Descrição | Autor |\n|:----------|:----------|:-------|\n"
+    for report_id in reports:
+        report = reports_json[report_id]
+        name = report["titulo"]
+        description = report["descricao"]
+        author = report["autor"]
+        link = f"[📄 {name}](?id={report_id})"
+        table_md += f"| {link} | {description} | {author} |\n"
 
     st.markdown(table_md, unsafe_allow_html=True)
-
-
 
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
@@ -61,28 +66,20 @@ def main():
     st.markdown("""
     <style>
     /* ========== SIDEBAR ========== */
-
-    /* Aplica cor branca em toda a sidebar */
     section[data-testid="stSidebar"] {
         color: #FFFFFF;
     }
-
-    /* Corrige texto de widgets: select, multiselect, sliders */
     section[data-testid="stSidebar"] .stSelectbox div,
     section[data-testid="stSidebar"] .stMultiSelect div,
     section[data-testid="stSidebar"] label,
     section[data-testid="stSidebar"] span {
         color: #FFFFFF !important;
     }
-
-    /* Corrige valores e labels dos sliders */
     section[data-testid="stSidebar"] .stSlider > div > div,
     section[data-testid="stSidebar"] .stSlider label,
     section[data-testid="stSidebar"] .stSlider span {
         color: #FFFFFF !important;
     }
-
-    /* Corrige headings invisíveis (como st.header/st.subheader na sidebar) */
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
     section[data-testid="stSidebar"] h3,
@@ -92,15 +89,10 @@ def main():
     section[data-testid="stSidebar"] p {
         color: #FFFFFF !important;
     }
-
-    /* Placeholders (texto "Escolha múltiplas...") */
     section[data-testid="stSidebar"] .css-1wa3eu0-placeholder {
         color: #FFFFFF !important;
     }
-
     /* ========== FORA DA SIDEBAR ========== */
-
-    /* Corrige texto em botões, selects, inputs fora da sidebar */
     .stButton > button,
     .stSelectbox div,
     .stMultiSelect div,
@@ -108,34 +100,22 @@ def main():
     .stTextArea textarea {
         color: #FFFFFF !important;
     }
-
-    /* Corrige opção selecionada (como Centro-Oeste) */
     .css-1d391kg, .css-1cpxqw2 {
         color: #FFFFFF !important;
     }
-
-    /* Corrige labels de campos fora da sidebar */
     label, .stSelectbox label {
         color: #1D345B !important;
         font-weight: bold;
     }
-
-    /* Corrige borda do selectbox */
     .stSelectbox > div {
         border: 1px solid #D32F2F !important;
         border-radius: 8px;
     }
-
-    /* Corrige itens do dropdown (quando expandido) */
     .css-1n76uvr-option {
         color: #1D345B !important;
     }
     </style>
     """, unsafe_allow_html=True)
-
-
-
-
 
     # Sidebar logo
     logo_url = "https://d28lvm9jkyfotx.cloudfront.net/logo.png"
@@ -149,14 +129,16 @@ def main():
         unsafe_allow_html=True
     )
 
+    # Load reports.json
+    reports_json = load_reports_json()
+
     # Determine if a report is selected
-    report_id = st.query_params.get("rel")
+    report_id = st.query_params.get("id")
 
     if report_id:
-        load_and_execute_report(report_id)
+        load_and_execute_report(report_id, reports_json)
     else:
-        reports = list_reports_in_s3()
-        show_homepage(reports)
+        show_homepage(reports_json)
 
 
 if __name__ == "__main__":
