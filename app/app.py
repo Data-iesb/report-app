@@ -46,7 +46,7 @@ def load_and_execute_report(report_id, reports_json):
 def show_homepage(reports_json):
     st.title("Central de Relatórios Dinâmicos 📊")
     st.markdown("Escolha um relatório abaixo.")
-
+    
     # Convert the reports_json dictionary into a pandas DataFrame
     data = []
     for report_id, report_data in reports_json.items():
@@ -57,21 +57,26 @@ def show_homepage(reports_json):
                 "Título": report_data["titulo"],
                 "Descrição": report_data["descricao"],
                 "Autor": report_data["autor"],
-                "Link": f"[Abrir Relatório]( {report_link} )"  # Markdown link
+                "Link": report_link  # Store raw link for later use
             })
-
+    
     df = pd.DataFrame(data)
 
-    # Display the DataFrame in Streamlit with clickable links
+    # Display the DataFrame in the main area
     st.write("### Relatórios Disponíveis")
-    st.dataframe(df)
+    st.dataframe(df.drop(columns=["Link"]))  # Display without the link column
+    
+    # Adding links to the sidebar dynamically
+    st.sidebar.title("Menu de Relatórios")
+    for _, row in df.iterrows():
+        report_link = row["Link"]
+        st.sidebar.markdown(f"[{row['Título']}]({report_link})")  # Add clickable link to the sidebar
 
     # Make the DataFrame rows clickable
     selected_row = st.selectbox("Escolha um relatório", df["Título"])
     if selected_row:
         report_id = df[df["Título"] == selected_row]["ID"].values[0]
         load_and_execute_report(report_id, reports_json)
-
 
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
