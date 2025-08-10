@@ -6,9 +6,10 @@ import tempfile  # <-- Add this import
 
 S3_BUCKET = "dataiesb"
 DYNAMODB_TABLE = "dataiesb-reports"
+AWS_REGION = "us-east-1"
 
-s3_client = boto3.client('s3')
-dynamodb = boto3.resource('dynamodb')
+s3_client = boto3.client('s3', region_name=AWS_REGION)
+dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
 table = dynamodb.Table(DYNAMODB_TABLE)
 
 def load_reports_from_dynamodb():
