@@ -5,28 +5,47 @@ import json
 import tempfile  # <-- Add this import
 
 S3_BUCKET = "dataiesb"
-s3_client = boto3.client('s3')
+DYNAMODB_TABLE = "dataiesb-reports"
 
-def load_reports_json():
-    """Fetch reports.json from S3"""
+s3_client = boto3.client('s3')
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table(DYNAMODB_TABLE)
+
+def load_reports_from_dynamodb():
+    """Fetch reports from DynamoDB table"""
     try:
-        # Load the reports.json from S3
-        response = s3_client.get_object(Bucket=S3_BUCKET, Key="reports.json")
-        reports_json = json.loads(response["Body"].read())
-        return reports_json
+        # Scan the DynamoDB table to get all reports
+        response = table.scan()
+        reports_data = {}
+        
+        # Convert DynamoDB response to the same format as the original JSON
+        for item in response['Items']:
+            report_id = item['report_id']
+            reports_data[report_id] = {
+                'id_s3': item['id_s3'],
+                'titulo': item['titulo'],
+                'descricao': item['descricao'],
+                'autor': item['autor'],
+                'deletado': item['deletado'],
+                'user_email': item['user_email'],
+                'created_at': item['created_at'],
+                'updated_at': item['updated_at']
+            }
+        
+        return reports_data
     except Exception as e:
-        st.error(f"❌ Erro ao carregar o arquivo 'reports.json': {e}")
+        st.error(f"❌ Erro ao carregar relatórios do DynamoDB: {e}")
         return {}
 
-def list_reports_in_s3(reports_json):
-    """List reports from the loaded JSON data"""
-    return [report_id for report_id in reports_json if not reports_json[report_id]["deletado"]]
+def list_reports_in_dynamodb(reports_data):
+    """List reports from the loaded DynamoDB data"""
+    return [report_id for report_id in reports_data if not reports_data[report_id]["deletado"]]
 
-def load_and_execute_report(report_id, reports_json):
+def load_and_execute_report(report_id, reports_data):
     """Download and execute the main.py script from S3"""
     try:
-        # Look up the report by its ID in the JSON data
-        report = reports_json.get(str(report_id))
+        # Look up the report by its ID in the data
+        report = reports_data.get(str(report_id))
         if not report:
             st.error(f"❌ Relatório não encontrado para o ID: {report_id}")
             return
@@ -43,13 +62,13 @@ def load_and_execute_report(report_id, reports_json):
     except Exception as e:
         st.error(f"❌ Erro ao carregar o relatório '{report_id}': {e}")
 
-def show_homepage(reports_json):
+def show_homepage(reports_data):
     st.title("Central de Relatórios Dinâmicos 📊")
     st.markdown("Escolha um relatório abaixo.")
     
-    # Convert the reports_json dictionary into a pandas DataFrame
+    # Convert the reports_data dictionary into a pandas DataFrame
     data = []
-    for report_id, report_data in reports_json.items():
+    for report_id, report_data in reports_data.items():
         if not report_data["deletado"]:
             report_link = f"https://dataiesb.com/reports/{report_id}"  # Create the link (adjust URL as necessary)
             data.append({
@@ -76,7 +95,7 @@ def show_homepage(reports_json):
     selected_row = st.selectbox("Escolha um relatório", df["Título"])
     if selected_row:
         report_id = df[df["Título"] == selected_row]["ID"].values[0]
-        load_and_execute_report(report_id, reports_json)
+        load_and_execute_report(report_id, reports_data)
 
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
@@ -147,16 +166,16 @@ def main():
         unsafe_allow_html=True
     )
 
-    # Load reports.json
-    reports_json = load_reports_json()
+    # Load reports from DynamoDB
+    reports_data = load_reports_from_dynamodb()
 
     # Determine if a report is selected
     report_id = st.query_params.get("id")
 
     if report_id:
-        load_and_execute_report(report_id, reports_json)
+        load_and_execute_report(report_id, reports_data)
     else:
-        show_homepage(reports_json)
+        show_homepage(reports_data)
 
 if __name__ == "__main__":
     main()
