@@ -29,35 +29,6 @@ try:
 except Exception as e:
     pass  # Ignore credential debug errors
 
-def test_aws_credentials():
-    """Test AWS credentials and permissions"""
-    st.subheader("🔧 AWS Credentials Test")
-    
-    try:
-        # Test S3 access
-        st.info("Testing S3 access...")
-        response = s3_client.list_objects_v2(Bucket=S3_BUCKET, MaxKeys=1)
-        st.success("✅ S3 access successful")
-        
-        # Test DynamoDB access
-        st.info("Testing DynamoDB access...")
-        response = table.scan(Limit=1)
-        st.success("✅ DynamoDB access successful")
-        
-        # Test specific S3 object
-        st.info("Testing S3 head_object...")
-        response = s3_client.head_object(Bucket=S3_BUCKET, Key="1/main.py")
-        st.success("✅ S3 head_object successful")
-        
-    except Exception as e:
-        st.error(f"❌ AWS Test Failed: {e}")
-        import traceback
-        st.error(f"Full error: {traceback.format_exc()}")
-
-# Add this to your main app logic
-if st.sidebar.button("🔧 Test AWS Credentials"):
-    test_aws_credentials()
-
 def load_reports_from_dynamodb():
     """Fetch reports from DynamoDB table"""
     try:
@@ -171,7 +142,7 @@ def show_homepage(reports_data):
     data = []
     for report_id, report_data in reports_data.items():
         if not report_data["deletado"]:
-            report_link = f"https://dataiesb.com/reports/{report_id}"  # Create the link (adjust URL as necessary)
+            report_link = f"http://app.dataiesb.com/report/?id={report_id}"  # Fixed URL format
             data.append({
                 "ID": report_id,
                 "Título": report_data["titulo"],
