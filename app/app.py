@@ -13,8 +13,47 @@ s3_client = boto3.client('s3', region_name=AWS_REGION)
 dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
 table = dynamodb.Table(DYNAMODB_TABLE)
 
-# Initialize S3 file system for pandas
-fs = s3fs.S3FileSystem()
+# Debug AWS credentials (only show in development)
+try:
+    import os
+    if os.getenv('DEBUG_AWS_CREDS', 'false').lower() == 'true':
+        session = boto3.Session()
+        credentials = session.get_credentials()
+        st.info(f"🔍 AWS Credentials Debug:")
+        st.info(f"   - Access Key: {credentials.access_key[:8]}..." if credentials.access_key else "   - Access Key: None")
+        st.info(f"   - Region: {AWS_REGION}")
+        st.info(f"   - Profile: {session.profile_name}")
+except Exception as e:
+    pass  # Ignore credential debug errors
+
+def test_aws_credentials():
+    """Test AWS credentials and permissions"""
+    st.subheader("🔧 AWS Credentials Test")
+    
+    try:
+        # Test S3 access
+        st.info("Testing S3 access...")
+        response = s3_client.list_objects_v2(Bucket=S3_BUCKET, MaxKeys=1)
+        st.success("✅ S3 access successful")
+        
+        # Test DynamoDB access
+        st.info("Testing DynamoDB access...")
+        response = table.scan(Limit=1)
+        st.success("✅ DynamoDB access successful")
+        
+        # Test specific S3 object
+        st.info("Testing S3 head_object...")
+        response = s3_client.head_object(Bucket=S3_BUCKET, Key="1/main.py")
+        st.success("✅ S3 head_object successful")
+        
+    except Exception as e:
+        st.error(f"❌ AWS Test Failed: {e}")
+        import traceback
+        st.error(f"Full error: {traceback.format_exc()}")
+
+# Add this to your main app logic
+if st.sidebar.button("🔧 Test AWS Credentials"):
+    test_aws_credentials()
 
 def load_reports_from_dynamodb():
     """Fetch reports from DynamoDB table"""
