@@ -125,9 +125,22 @@ def load_and_execute_report(report_id, reports_data):
             code = f.read()
         
         # Create execution context with necessary imports and variables
+        # Create a modified streamlit object that prevents set_page_config calls
+        class StreamlitWrapper:
+            def __init__(self, original_st):
+                self._st = original_st
+            
+            def __getattr__(self, name):
+                if name == 'set_page_config':
+                    # Return a no-op function for set_page_config
+                    return lambda *args, **kwargs: None
+                return getattr(self._st, name)
+        
+        st_wrapper = StreamlitWrapper(st)
+        
         exec_globals = {
             "__name__": "__main__",
-            "st": st,
+            "st": st_wrapper,  # Use the wrapper instead of original st
             "pd": pd,
             "boto3": boto3,
             "s3_client": s3_client,
