@@ -13,6 +13,9 @@ s3_client = boto3.client('s3', region_name=AWS_REGION)
 dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
 table = dynamodb.Table(DYNAMODB_TABLE)
 
+# Initialize S3 file system for pandas
+fs = s3fs.S3FileSystem()
+
 # Debug AWS credentials (only show in development)
 try:
     import os
