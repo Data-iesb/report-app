@@ -60,12 +60,19 @@ def load_and_execute_report(report_id, reports_data):
         
         # Check if the object exists in S3 before attempting to download
         try:
-            s3_client.head_object(Bucket=S3_BUCKET, Key=s3_key)
+            st.info(f"🔍 Verificando arquivo S3: s3://{S3_BUCKET}/{s3_key}")
+            response = s3_client.head_object(Bucket=S3_BUCKET, Key=s3_key)
+            st.success(f"✅ Arquivo encontrado: {response['ContentLength']} bytes")
         except s3_client.exceptions.NoSuchKey:
             st.error(f"❌ Arquivo não encontrado no S3: {s3_key}")
             return
         except Exception as head_error:
             st.error(f"❌ Erro ao verificar arquivo no S3: {head_error}")
+            st.error(f"🔍 Debug info - Bucket: {S3_BUCKET}, Key: {s3_key}")
+            st.error(f"🔍 AWS Region: {AWS_REGION}")
+            # Try to get more specific error information
+            import traceback
+            st.error(f"🔍 Full error: {traceback.format_exc()}")
             return
         
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".py", delete=False) as tmp:
