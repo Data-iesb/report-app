@@ -3,14 +3,18 @@ import pandas as pd
 import boto3
 import json
 import tempfile  # <-- Add this import
+import s3fs  # Add this import for S3 file system support
 
-S3_BUCKET = "dataiesb"
+S3_BUCKET = "dataiesb-reports"
 DYNAMODB_TABLE = "dataiesb-reports"
 AWS_REGION = "us-east-1"
 
 s3_client = boto3.client('s3', region_name=AWS_REGION)
 dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
 table = dynamodb.Table(DYNAMODB_TABLE)
+
+# Initialize S3 file system for pandas
+fs = s3fs.S3FileSystem()
 
 def load_reports_from_dynamodb():
     """Fetch reports from DynamoDB table"""
@@ -53,13 +57,47 @@ def load_and_execute_report(report_id, reports_data):
         
         # Get the S3 path for the main.py script
         s3_key = f"{report['id_s3']}main.py"
+        
+        # Check if the object exists in S3 before attempting to download
+        try:
+            s3_client.head_object(Bucket=S3_BUCKET, Key=s3_key)
+        except s3_client.exceptions.NoSuchKey:
+            st.error(f"❌ Arquivo não encontrado no S3: {s3_key}")
+            return
+        except Exception as head_error:
+            st.error(f"❌ Erro ao verificar arquivo no S3: {head_error}")
+            return
+        
         with tempfile.NamedTemporaryFile(mode="wb", suffix=".py", delete=False) as tmp:
             s3_client.download_fileobj(S3_BUCKET, s3_key, tmp)
             tmp_path = tmp.name
 
         with open(tmp_path, "r") as f:
             code = f.read()
-        exec(code, {"__name__": "__main__"})
+        
+        # Create execution context with necessary imports and variables
+        exec_globals = {
+            "__name__": "__main__",
+            "st": st,
+            "pd": pd,
+            "boto3": boto3,
+            "s3_client": s3_client,
+            "S3_BUCKET": S3_BUCKET,
+            "AWS_REGION": AWS_REGION,
+            "s3fs": s3fs,
+            "fs": fs
+        }
+        
+        # Import additional modules that might be needed
+        try:
+            import plotly.express as px
+            import plotly.io as pio
+            exec_globals["px"] = px
+            exec_globals["pio"] = pio
+        except ImportError:
+            pass
+            
+        exec(code, exec_globals)
     except Exception as e:
         st.error(f"❌ Erro ao carregar o relatório '{report_id}': {e}")
 
