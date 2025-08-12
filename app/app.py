@@ -69,7 +69,7 @@ def load_and_execute_report(report_id, reports_data):
             return
         
         # Get the S3 path for the main.py script
-        s3_key = f"{report['report_id']}/main.py"
+        s3_key = f"{report_id}/main.py"
         
         # Check if the object exists in S3 before attempting to download
         try:
