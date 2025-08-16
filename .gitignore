@@ -2,3 +2,5 @@ Dockerfile-Local
 install.sh
 reinstall.sh
 uninstall.sh
+tmp/
+app/tmp/

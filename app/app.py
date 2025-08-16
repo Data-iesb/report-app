@@ -2,19 +2,30 @@ import streamlit as st
 import pandas as pd
 import boto3
 import json
-import tempfile  # <-- Add this import
-import s3fs  # Add this import for S3 file system support
+import tempfile
+import s3fs
+import os
+import shutil
+import time
 
 S3_BUCKET = "dataiesb-reports"
 DYNAMODB_TABLE = "dataiesb-reports"
 AWS_REGION = "us-east-1"
 
-s3_client = boto3.client('s3', region_name=AWS_REGION)
-dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
-table = dynamodb.Table(DYNAMODB_TABLE)
-
-# Initialize S3 file system for pandas
-fs = s3fs.S3FileSystem()
+# Initialize AWS clients with error handling
+try:
+    s3_client = boto3.client('s3', region_name=AWS_REGION)
+    dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
+    table = dynamodb.Table(DYNAMODB_TABLE)
+    
+    # Initialize S3 file system for pandas
+    fs = s3fs.S3FileSystem()
+except Exception as e:
+    st.error(f"❌ Erro ao inicializar clientes AWS: {e}")
+    s3_client = None
+    dynamodb = None
+    table = None
+    fs = None
 
 # Debug AWS credentials (only show in development)
 try:
@@ -29,30 +40,86 @@ try:
 except Exception as e:
     pass  # Ignore credential debug errors
 
+def cleanup_old_temp_files():
+    """Clean up old temporary files on startup"""
+    try:
+        tmp_dir = os.path.join(os.getcwd(), "tmp")
+        if os.path.exists(tmp_dir):
+            for filename in os.listdir(tmp_dir):
+                file_path = os.path.join(tmp_dir, filename)
+                if os.path.isfile(file_path):
+                    # Remove files older than 1 hour
+                    file_age = time.time() - os.path.getmtime(file_path)
+                    if file_age > 3600:  # 1 hour in seconds
+                        os.remove(file_path)
+                        print(f"Removed old temp file: {filename}")
+    except Exception as e:
+        print(f"Error cleaning up temp files: {e}")
+
 def load_reports_from_dynamodb():
     """Fetch reports from DynamoDB table"""
+    if not table:
+        st.error("❌ Cliente DynamoDB não inicializado")
+        return {}
+        
     try:
         # Scan the DynamoDB table to get all reports
         response = table.scan()
         reports_data = {}
+        processed_count = 0
+        error_count = 0
         
         # Convert DynamoDB response to the same format as the original JSON
         for item in response['Items']:
-            report_id = item['report_id']
-            reports_data[report_id] = {
-                'id_s3': item['id_s3'],
-                'titulo': item['titulo'],
-                'descricao': item['descricao'],
-                'autor': item['autor'],
-                'deletado': item['deletado'],
-                'user_email': item['user_email'],
-                'created_at': item['created_at'],
-                'updated_at': item['updated_at']
-            }
+            try:
+                report_id = item.get('report_id')
+                if not report_id:
+                    st.warning(f"⚠️ Item sem report_id encontrado, pulando...")
+                    error_count += 1
+                    continue
+                
+                # Check for missing fields and provide defaults
+                missing_fields = []
+                if 'id_s3' not in item:
+                    missing_fields.append('id_s3')
+                if 'deletado' not in item:
+                    missing_fields.append('deletado')
+                    
+                if missing_fields:
+                    st.info(f"ℹ️ Relatório {report_id} tem campos faltando: {missing_fields}. Usando valores padrão.")
+                    
+                reports_data[report_id] = {
+                    'id_s3': item.get('id_s3', f"{report_id}/"),  # Default to report_id/
+                    'titulo': item.get('titulo', 'Título não disponível'),
+                    'descricao': item.get('descricao', 'Descrição não disponível'),
+                    'autor': item.get('autor', 'Autor não informado'),
+                    'deletado': item.get('deletado', False),  # Default to False
+                    'user_email': item.get('user_email', ''),
+                    'created_at': item.get('created_at', ''),
+                    'updated_at': item.get('updated_at', '')
+                }
+                processed_count += 1
+                
+            except Exception as item_error:
+                error_count += 1
+                st.warning(f"⚠️ Erro ao processar item {item.get('report_id', 'unknown')}: {item_error}")
+                continue
         
+        if processed_count > 0:
+            st.success(f"✅ Carregados {processed_count} relatórios do DynamoDB")
+        if error_count > 0:
+            st.warning(f"⚠️ {error_count} itens tiveram problemas durante o carregamento")
+            
         return reports_data
+        
     except Exception as e:
         st.error(f"❌ Erro ao carregar relatórios do DynamoDB: {e}")
+        st.error(f"Tipo do erro: {type(e).__name__}")
+        
+        # Add debug information
+        if st.sidebar.checkbox("Debug DynamoDB Error", key="debug_dynamo"):
+            st.exception(e)
+            
         return {}
 
 def list_reports_in_dynamodb(reports_data):
@@ -61,6 +128,11 @@ def list_reports_in_dynamodb(reports_data):
 
 def load_and_execute_report(report_id, reports_data):
     """Download and execute the main.py script from S3"""
+    if not s3_client:
+        st.error("❌ Cliente S3 não inicializado")
+        return
+        
+    tmp_dir = None
     try:
         # Look up the report by its ID in the data
         report = reports_data.get(str(report_id))
@@ -81,11 +153,19 @@ def load_and_execute_report(report_id, reports_data):
             st.error(f"❌ Erro ao verificar arquivo no S3: {head_error}")
             return
         
-        with tempfile.NamedTemporaryFile(mode="wb", suffix=".py", delete=False) as tmp:
-            s3_client.download_fileobj(S3_BUCKET, s3_key, tmp)
-            tmp_path = tmp.name
+        # Create tmp directory if it doesn't exist
+        tmp_dir = os.path.join(os.getcwd(), "tmp")
+        os.makedirs(tmp_dir, exist_ok=True)
+        
+        # Create temporary file in tmp/ folder
+        tmp_file_path = os.path.join(tmp_dir, f"report_{report_id}_main.py")
+        
+        # Download file from S3
+        with open(tmp_file_path, "wb") as tmp_file:
+            s3_client.download_fileobj(S3_BUCKET, s3_key, tmp_file)
 
-        with open(tmp_path, "r") as f:
+        # Read the code
+        with open(tmp_file_path, "r", encoding="utf-8") as f:
             code = f.read()
         
         # Create execution context with necessary imports and variables
@@ -111,7 +191,9 @@ def load_and_execute_report(report_id, reports_data):
             "S3_BUCKET": S3_BUCKET,
             "AWS_REGION": AWS_REGION,
             "s3fs": s3fs,
-            "fs": fs
+            "fs": fs,
+            "os": os,
+            "tempfile": tempfile
         }
         
         # Import additional modules that might be needed
@@ -124,8 +206,22 @@ def load_and_execute_report(report_id, reports_data):
             pass
             
         exec(code, exec_globals)
+        
     except Exception as e:
         st.error(f"❌ Erro ao carregar o relatório '{report_id}': {e}")
+        st.exception(e)  # Show full traceback for debugging
+    finally:
+        # Clean up temporary files
+        if tmp_dir and os.path.exists(tmp_dir):
+            try:
+                # Remove all files in tmp directory
+                for filename in os.listdir(tmp_dir):
+                    file_path = os.path.join(tmp_dir, filename)
+                    if os.path.isfile(file_path):
+                        os.remove(file_path)
+                        st.info(f"🗑️ Arquivo temporário removido: {filename}")
+            except Exception as cleanup_error:
+                st.warning(f"⚠️ Erro ao limpar arquivos temporários: {cleanup_error}")
 
 def show_homepage(reports_data):
     st.title("Central de Relatórios Dinâmicos 📊")
@@ -144,6 +240,10 @@ def show_homepage(reports_data):
                 "Link": report_link  # Store raw link for later use
             })
     
+    if not data:
+        st.warning("Nenhum relatório ativo encontrado.")
+        return
+    
     df = pd.DataFrame(data)
 
     # Display the DataFrame in the main area
@@ -156,14 +256,20 @@ def show_homepage(reports_data):
         report_link = row["Link"]
         st.sidebar.markdown(f"[{row['Título']}]({report_link})")  # Add clickable link to the sidebar
 
-    # Make the DataFrame rows clickable
-    selected_row = st.selectbox("Escolha um relatório", df["Título"])
-    if selected_row:
+    # Make the DataFrame rows clickable - FIXED: Add default option
+    report_options = ["Selecione um relatório..."] + df["Título"].tolist()
+    selected_row = st.selectbox("Escolha um relatório", report_options)
+    
+    if selected_row and selected_row != "Selecione um relatório...":
         report_id = df[df["Título"] == selected_row]["ID"].values[0]
+        st.info(f"Carregando relatório: {selected_row} (ID: {report_id})")
         load_and_execute_report(report_id, reports_data)
 
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
+    
+    # Clean up old temporary files on startup
+    cleanup_old_temp_files()
 
     st.markdown("""
     <style>
@@ -234,14 +340,20 @@ def main():
     # Load reports from DynamoDB
     reports_data = load_reports_from_dynamodb()
 
+    # Debug info
+    if st.sidebar.checkbox("Debug Info"):
+        st.sidebar.write(f"Total reports: {len(reports_data)}")
+        active_count = len([r for r in reports_data.values() if not r["deletado"]])
+        st.sidebar.write(f"Active reports: {active_count}")
+
     # Determine if a report is selected
     report_id = st.query_params.get("id")
 
     if report_id:
+        st.info(f"Loading report from URL parameter: {report_id}")
         load_and_execute_report(report_id, reports_data)
     else:
         show_homepage(reports_data)
 
 if __name__ == "__main__":
     main()
-
