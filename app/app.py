@@ -22,7 +22,7 @@ def render_dashboard_header(report_data):
     
     st.markdown(f"""
     <div class="report-header">
-        <h1 class="header-title">📊 {titulo}</h1>
+        <h1 class="header-title">{titulo}</h1>
         <p class="header-desc">{descricao}</p>
     </div>
     """, unsafe_allow_html=True)
