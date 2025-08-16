@@ -68,13 +68,15 @@ def load_reports_from_dynamodb():
         reports_data = {}
         processed_count = 0
         error_count = 0
+        missing_fields_reports = []
         
         # Convert DynamoDB response to the same format as the original JSON
         for item in response['Items']:
             try:
                 report_id = item.get('report_id')
                 if not report_id:
-                    st.warning(f"⚠️ Item sem report_id encontrado, pulando...")
+                    if st.session_state.get("show_debug", False):
+                        st.warning(f"⚠️ Item sem report_id encontrado, pulando...")
                     error_count += 1
                     continue
                 
@@ -86,7 +88,10 @@ def load_reports_from_dynamodb():
                     missing_fields.append('deletado')
                     
                 if missing_fields:
-                    st.info(f"ℹ️ Relatório {report_id} tem campos faltando: {missing_fields}. Usando valores padrão.")
+                    missing_fields_reports.append((report_id, missing_fields))
+                    # Only show individual messages in debug mode
+                    if st.session_state.get("show_debug", False):
+                        st.info(f"ℹ️ Relatório {report_id} tem campos faltando: {missing_fields}. Usando valores padrão.")
                     
                 reports_data[report_id] = {
                     'id_s3': item.get('id_s3', f"{report_id}/"),  # Default to report_id/
@@ -102,13 +107,23 @@ def load_reports_from_dynamodb():
                 
             except Exception as item_error:
                 error_count += 1
-                st.warning(f"⚠️ Erro ao processar item {item.get('report_id', 'unknown')}: {item_error}")
+                if st.session_state.get("show_debug", False):
+                    st.warning(f"⚠️ Erro ao processar item {item.get('report_id', 'unknown')}: {item_error}")
                 continue
         
+        # Show summary messages
         if processed_count > 0:
-            st.success(f"✅ Carregados {processed_count} relatórios do DynamoDB")
+            # Only show success message in debug mode, or if there were issues
+            if st.session_state.get("show_debug", False) or error_count > 0 or missing_fields_reports:
+                st.success(f"✅ Carregados {processed_count} relatórios do DynamoDB")
+        
+        # Show summary of missing fields only in debug mode
+        if missing_fields_reports and st.session_state.get("show_debug", False):
+            st.info(f"ℹ️ {len(missing_fields_reports)} relatórios com campos faltando foram corrigidos com valores padrão")
+        
         if error_count > 0:
-            st.warning(f"⚠️ {error_count} itens tiveram problemas durante o carregamento")
+            if st.session_state.get("show_debug", False):
+                st.warning(f"⚠️ {error_count} itens tiveram problemas durante o carregamento")
             
         return reports_data
         
@@ -301,7 +316,9 @@ def show_homepage(reports_data):
     
     if selected_row and selected_row != "Selecione um relatório...":
         report_id = df[df["Título"] == selected_row]["ID"].values[0]
-        st.info(f"Carregando relatório: {selected_row} (ID: {report_id})")
+        # Only show loading message in debug mode
+        if st.session_state.get("show_debug", False):
+            st.info(f"🔍 Debug: Carregando relatório: {selected_row} (ID: {report_id})")
         load_and_execute_report(report_id, reports_data)
 
 def main():
@@ -449,7 +466,9 @@ def main():
     report_id = st.query_params.get("id")
 
     if report_id:
-        st.info(f"Loading report from URL parameter: {report_id}")
+        # Only show loading message in debug mode
+        if st.session_state.get("show_debug", False):
+            st.info(f"🔍 Debug: Loading report from URL parameter: {report_id}")
         load_and_execute_report(report_id, reports_data)
     else:
         show_homepage(reports_data)
