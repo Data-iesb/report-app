@@ -12,6 +12,154 @@ S3_BUCKET = "dataiesb-reports"
 DYNAMODB_TABLE = "dataiesb-reports"
 AWS_REGION = "us-east-1"
 
+# Debugging variable - set to False to disable debug output
+debugging_bol = True
+
+def render_dashboard_header(report_data):
+    """Render the dashboard header with title and description"""
+    titulo = report_data.get('titulo', 'Dashboard')
+    descricao = report_data.get('descricao', 'Análise de dados interativa')
+    
+    st.markdown(f"""
+    <div class="report-header">
+        <h1 class="header-title">📊 {titulo}</h1>
+        <p class="header-desc">{descricao}</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+def render_dashboard_footer(report_data):
+    """Render the dashboard footer with author information"""
+    autor = report_data.get('autor', 'Autor não informado')
+    created_at = report_data.get('created_at', '')
+    updated_at = report_data.get('updated_at', '')
+    
+    # Format dates if available
+    created_date = ""
+    updated_date = ""
+    
+    if created_at:
+        try:
+            from datetime import datetime
+            if isinstance(created_at, str):
+                # Try to parse ISO format date
+                dt = datetime.fromisoformat(created_at.replace('Z', '+00:00'))
+                created_date = dt.strftime('%d/%m/%Y')
+        except:
+            created_date = str(created_at)[:10]  # Fallback to first 10 chars
+    
+    if updated_at and updated_at != created_at:
+        try:
+            from datetime import datetime
+            if isinstance(updated_at, str):
+                dt = datetime.fromisoformat(updated_at.replace('Z', '+00:00'))
+                updated_date = dt.strftime('%d/%m/%Y')
+        except:
+            updated_date = str(updated_at)[:10]
+    
+    # Use Streamlit native components for better compatibility
+    st.markdown("---")
+    
+    # Create columns for footer info
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown(f"**👨‍💻 Desenvolvido por:** {autor}")
+    
+    with col2:
+        if created_date:
+            st.markdown(f"**📅 Criado em:** {created_date}")
+    
+    with col3:
+        if updated_date:
+            st.markdown(f"**🔄 Atualizado em:** {updated_date}")
+
+def check_local_main():
+    """Check if there's a local main.py file for development"""
+    local_main_path = os.path.join(os.getcwd(), "main.py")
+    return os.path.exists(local_main_path)
+
+def load_and_execute_local_main():
+    """Load and execute local main.py with template"""
+    local_main_path = os.path.join(os.getcwd(), "main.py")
+    
+    try:
+        # Create mock report data for local development
+        mock_report_data = {
+            'titulo': '🧪 Local Development Dashboard',
+            'descricao': 'Dashboard em desenvolvimento local. Esta é uma simulação do ambiente de produção.',
+            'autor': 'Desenvolvedor Local',
+            'created_at': '2025-08-16T20:10:00Z',
+            'updated_at': '2025-08-16T20:10:00Z'
+        }
+        
+        # Render dashboard header
+        render_dashboard_header(mock_report_data)
+        
+        # Read and execute the local main.py
+        with open(local_main_path, "r", encoding="utf-8") as f:
+            code = f.read()
+        
+        # Create execution context
+        class StreamlitWrapper:
+            def __init__(self, original_st):
+                self._st = original_st
+            
+            def __getattr__(self, name):
+                if name == 'set_page_config':
+                    # Return a no-op function for set_page_config
+                    return lambda *args, **kwargs: None
+                return getattr(self._st, name)
+        
+        st_wrapper = StreamlitWrapper(st)
+        
+        exec_globals = {
+            "__name__": "__main__",
+            "st": st_wrapper,
+            "pd": pd,
+            "boto3": boto3,
+            "os": os,
+            "tempfile": tempfile
+        }
+        
+        # Import additional modules that might be needed
+        try:
+            import plotly.express as px
+            import plotly.io as pio
+            exec_globals["px"] = px
+            exec_globals["pio"] = pio
+        except ImportError:
+            pass
+        
+        # Execute the local main.py
+        exec(code, exec_globals)
+        
+        # Render dashboard footer
+        render_dashboard_footer(mock_report_data)
+        
+        # Show local development notice
+        st.info("🧪 **Modo de Desenvolvimento Local** - Este dashboard está sendo executado localmente. Para produção, faça upload para o S3.")
+        
+        return True
+        
+    except Exception as e:
+        st.error(f"❌ Erro ao executar main.py local: {e}")
+        st.error(f"Tipo do erro: {type(e).__name__}")
+        return False
+
+def load_css_file(css_file_path):
+    """Load CSS file and inject it into Streamlit"""
+    try:
+        with open(css_file_path, 'r', encoding='utf-8') as f:
+            css_content = f.read()
+        st.markdown(f"<style>{css_content}</style>", unsafe_allow_html=True)
+        return True
+    except FileNotFoundError:
+        st.warning(f"⚠️ CSS file not found: {css_file_path}")
+        return False
+    except Exception as e:
+        st.error(f"❌ Error loading CSS file: {e}")
+        return False
+
 # Initialize AWS clients with error handling
 try:
     s3_client = boto3.client('s3', region_name=AWS_REGION)
@@ -164,6 +312,9 @@ def load_and_execute_report(report_id, reports_data):
             st.error(f"❌ Relatório não encontrado para o ID: {report_id}")
             return
         
+        # Render dashboard header
+        render_dashboard_header(report)
+        
         # Get the S3 path for the main.py script
         s3_key = f"{report_id}/main.py"
         
@@ -249,6 +400,9 @@ def load_and_execute_report(report_id, reports_data):
         if st.session_state.get("show_debug", False):
             st.success(f"✅ Debug: Relatório executado com sucesso!")
         
+        # Render dashboard footer
+        render_dashboard_footer(report)
+        
     except Exception as e:
         st.error(f"❌ Erro ao carregar o relatório '{report_id}': {e}")
         
@@ -324,62 +478,11 @@ def show_homepage(reports_data):
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
     
+    # Load CSS file
+    load_css_file("style.css")
+    
     # Clean up old temporary files on startup
     cleanup_old_temp_files()
-
-    st.markdown("""
-    <style>
-    /* ========== SIDEBAR ========== */
-    section[data-testid="stSidebar"] {
-        color: #FFFFFF;
-    }
-    section[data-testid="stSidebar"] .stSelectbox div,
-    section[data-testid="stSidebar"] .stMultiSelect div,
-    section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] span {
-        color: #FFFFFF !important;
-    }
-    section[data-testid="stSidebar"] .stSlider > div > div,
-    section[data-testid="stSidebar"] .stSlider label,
-    section[data-testid="stSidebar"] .stSlider span {
-        color: #FFFFFF !important;
-    }
-    section[data-testid="stSidebar"] h1,
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3,
-    section[data-testid="stSidebar"] h4,
-    section[data-testid="stSidebar"] h5,
-    section[data-testid="stSidebar"] h6,
-    section[data-testid="stSidebar"] p {
-        color: #FFFFFF !important;
-    }
-    section[data-testid="stSidebar"] .css-1wa3eu0-placeholder {
-        color: #FFFFFF !important;
-    }
-    /* ========== FORA DA SIDEBAR ========== */
-    .stButton > button,
-    .stSelectbox div,
-    .stMultiSelect div,
-    .stTextInput input,
-    .stTextArea textarea {
-        color: #FFFFFF !important;
-    }
-    .css-1d391kg, .css-1cpxqw2 {
-        color: #FFFFFF !important;
-    }
-    label, .stSelectbox label {
-        color: #1D345B !important;
-        font-weight: bold;
-    }
-    .stSelectbox > div {
-        border: 1px solid #D32F2F !important;
-        border-radius: 8px;
-    }
-    .css-1n76uvr-option {
-        color: #1D345B !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
 
     # Sidebar logo
     logo_url = "https://d28lvm9jkyfotx.cloudfront.net/logo.png"
@@ -396,71 +499,40 @@ def main():
     # Load reports from DynamoDB
     reports_data = load_reports_from_dynamodb()
 
-    # Debug info in sidebar
+    # Debug info in sidebar - simplified
     st.sidebar.markdown("---")
-    st.sidebar.markdown("### 🔍 Debug Information")
+    st.sidebar.markdown("### 🔍 Debug Options")
     
-    if st.sidebar.checkbox("Show Debug Info", key="show_debug"):
-        st.sidebar.write(f"**Total reports:** {len(reports_data)}")
+    # Simple debug toggle
+    show_debug = st.sidebar.checkbox("Show Debug Info", key="show_debug")
+    
+    if show_debug:
+        st.sidebar.write(f"**Reports:** {len(reports_data)} total")
         active_count = len([r for r in reports_data.values() if not r["deletado"]])
-        deleted_count = len(reports_data) - active_count
-        st.sidebar.write(f"**Active reports:** {active_count}")
-        st.sidebar.write(f"**Deleted reports:** {deleted_count}")
+        st.sidebar.write(f"**Active:** {active_count}")
         
-        # AWS Client Status
-        st.sidebar.write("**AWS Clients:**")
-        st.sidebar.write(f"  - S3 Client: {'✅ OK' if s3_client else '❌ Failed'}")
-        st.sidebar.write(f"  - DynamoDB: {'✅ OK' if table else '❌ Failed'}")
-        st.sidebar.write(f"  - S3FS: {'✅ OK' if fs else '❌ Failed'}")
+        # AWS Status
+        aws_status = "✅" if s3_client and table else "❌"
+        st.sidebar.write(f"**AWS:** {aws_status}")
         
-        # Environment Info
-        st.sidebar.write("**Environment:**")
-        st.sidebar.write(f"  - Region: {AWS_REGION}")
-        st.sidebar.write(f"  - S3 Bucket: {S3_BUCKET}")
-        st.sidebar.write(f"  - DynamoDB Table: {DYNAMODB_TABLE}")
-        
-        # Temp Directory Status
-        tmp_dir = os.path.join(os.getcwd(), "tmp")
-        tmp_exists = os.path.exists(tmp_dir)
-        st.sidebar.write(f"**Temp Directory:** {'✅ Exists' if tmp_exists else '❌ Missing'}")
-        
-        if tmp_exists:
-            try:
-                tmp_files = os.listdir(tmp_dir)
-                st.sidebar.write(f"  - Files in tmp/: {len(tmp_files)}")
-                if tmp_files:
-                    st.sidebar.write("  - Files:")
-                    for file in tmp_files[:5]:  # Show max 5 files
-                        st.sidebar.write(f"    • {file}")
-                    if len(tmp_files) > 5:
-                        st.sidebar.write(f"    • ... and {len(tmp_files) - 5} more")
-            except Exception as e:
-                st.sidebar.write(f"  - Error reading tmp/: {e}")
+        # Advanced options (collapsed by default)
+        if st.sidebar.expander("Advanced Debug"):
+            st.sidebar.write(f"**Environment:**")
+            st.sidebar.write(f"  - Region: {AWS_REGION}")
+            st.sidebar.write(f"  - S3 Bucket: {S3_BUCKET}")
+            
+            # Error details toggle
+            st.sidebar.checkbox("Show Error Details", key="error_debug")
+            
+            # Temp directory info
+            tmp_dir = os.path.join(os.getcwd(), "tmp")
+            if os.path.exists(tmp_dir):
+                tmp_files = len(os.listdir(tmp_dir))
+                st.sidebar.write(f"  - Temp files: {tmp_files}")
     
-    # Advanced Debug Options
-    if st.sidebar.checkbox("Advanced Debug", key="advanced_debug"):
-        st.sidebar.markdown("#### 📊 Report Details")
-        for report_id, report in list(reports_data.items())[:3]:  # Show first 3 reports
-            status = "🗑️ DELETED" if report['deletado'] else "✅ ACTIVE"
-            st.sidebar.write(f"**{report_id}:** {status}")
-            st.sidebar.write(f"  - Title: {report['titulo'][:20]}...")
-            st.sidebar.write(f"  - Author: {report['autor'][:15]}...")
-            st.sidebar.write(f"  - S3 Path: {report['id_s3']}")
-        
-        if len(reports_data) > 3:
-            st.sidebar.write(f"... and {len(reports_data) - 3} more reports")
-    
-    # Error Debug (only show if there were errors)
-    if st.sidebar.checkbox("Error Debug", key="error_debug"):
-        st.sidebar.markdown("#### 🐛 Error Information")
-        st.sidebar.write("Enable this to see detailed error traces when they occur.")
-        st.sidebar.write("Errors will be displayed in the main area.")
-
-    # Old debug info (keep for compatibility)
-    if st.sidebar.checkbox("Legacy Debug Info", key="legacy_debug"):
-        st.sidebar.write(f"Total reports: {len(reports_data)}")
-        active_count = len([r for r in reports_data.values() if not r["deletado"]])
-        st.sidebar.write(f"Active reports: {active_count}")
+    # Keep error debug as separate option for when things go wrong
+    if not show_debug:
+        st.sidebar.checkbox("Show Error Details", key="error_debug")
 
     # Determine if a report is selected
     report_id = st.query_params.get("id")

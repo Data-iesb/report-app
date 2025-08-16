@@ -1,10 +1,24 @@
-/* style.css */
-.stMultiSelect > div > div {
-    background-color: white !important;
-    color: black !important;
-}
-.stTextInput input {
-    background-color: white !important;
-    color: black !important;
+/* Minimal CSS - Only Essential Styling */
+
+/* Report header template styling */
+.report-header {
+    background: linear-gradient(135deg, #1D345B 0%, #2C5282 100%);
+    color: white;
+    padding: 30px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    text-align: center;
 }
 
+.report-header * {
+    color: white !important;
+}
+
+/* Sidebar white text */
+section[data-testid="stSidebar"] {
+    background-color: #1D345B;
+}
+
+section[data-testid="stSidebar"] * {
+    color: white !important;
+}
