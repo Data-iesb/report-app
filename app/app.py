@@ -116,9 +116,14 @@ def load_reports_from_dynamodb():
         st.error(f"❌ Erro ao carregar relatórios do DynamoDB: {e}")
         st.error(f"Tipo do erro: {type(e).__name__}")
         
-        # Add debug information
-        if st.sidebar.checkbox("Debug DynamoDB Error", key="debug_dynamo"):
-            st.exception(e)
+        # Check if error debug is enabled in sidebar
+        try:
+            # This will work if the sidebar has been rendered
+            if st.session_state.get("error_debug", False):
+                st.exception(e)
+        except:
+            # Fallback if session state is not available yet
+            pass
             
         return {}
 
@@ -134,6 +139,10 @@ def load_and_execute_report(report_id, reports_data):
         
     tmp_dir = None
     try:
+        # Debug info
+        if st.session_state.get("show_debug", False):
+            st.info(f"🔍 Debug: Carregando relatório ID {report_id}")
+        
         # Look up the report by its ID in the data
         report = reports_data.get(str(report_id))
         if not report:
@@ -143,9 +152,15 @@ def load_and_execute_report(report_id, reports_data):
         # Get the S3 path for the main.py script
         s3_key = f"{report_id}/main.py"
         
+        if st.session_state.get("show_debug", False):
+            st.info(f"🔍 Debug: Buscando arquivo S3: {s3_key}")
+        
         # Check if the object exists in S3 before attempting to download
         try:
             response = s3_client.head_object(Bucket=S3_BUCKET, Key=s3_key)
+            if st.session_state.get("show_debug", False):
+                file_size = response.get('ContentLength', 0)
+                st.info(f"🔍 Debug: Arquivo encontrado, tamanho: {file_size} bytes")
         except s3_client.exceptions.NoSuchKey:
             st.error(f"❌ Arquivo não encontrado no S3: {s3_key}")
             return
@@ -160,6 +175,9 @@ def load_and_execute_report(report_id, reports_data):
         # Create temporary file in tmp/ folder
         tmp_file_path = os.path.join(tmp_dir, f"report_{report_id}_main.py")
         
+        if st.session_state.get("show_debug", False):
+            st.info(f"🔍 Debug: Salvando em: {tmp_file_path}")
+        
         # Download file from S3
         with open(tmp_file_path, "wb") as tmp_file:
             s3_client.download_fileobj(S3_BUCKET, s3_key, tmp_file)
@@ -167,6 +185,9 @@ def load_and_execute_report(report_id, reports_data):
         # Read the code
         with open(tmp_file_path, "r", encoding="utf-8") as f:
             code = f.read()
+        
+        if st.session_state.get("show_debug", False):
+            st.info(f"🔍 Debug: Código carregado, {len(code)} caracteres")
         
         # Create execution context with necessary imports and variables
         # Create a modified streamlit object that prevents set_page_config calls
@@ -204,22 +225,40 @@ def load_and_execute_report(report_id, reports_data):
             exec_globals["pio"] = pio
         except ImportError:
             pass
+        
+        if st.session_state.get("show_debug", False):
+            st.info(f"🔍 Debug: Executando código do relatório...")
             
         exec(code, exec_globals)
         
+        if st.session_state.get("show_debug", False):
+            st.success(f"✅ Debug: Relatório executado com sucesso!")
+        
     except Exception as e:
         st.error(f"❌ Erro ao carregar o relatório '{report_id}': {e}")
-        st.exception(e)  # Show full traceback for debugging
+        
+        # Show detailed error if error debug is enabled
+        if st.session_state.get("error_debug", False):
+            st.exception(e)
+        else:
+            st.error(f"Tipo do erro: {type(e).__name__}")
+            st.info("💡 Ative 'Error Debug' na barra lateral para ver detalhes completos")
+            
     finally:
         # Clean up temporary files
         if tmp_dir and os.path.exists(tmp_dir):
             try:
                 # Remove all files in tmp directory
+                files_removed = 0
                 for filename in os.listdir(tmp_dir):
                     file_path = os.path.join(tmp_dir, filename)
                     if os.path.isfile(file_path):
                         os.remove(file_path)
-                        st.info(f"🗑️ Arquivo temporário removido: {filename}")
+                        files_removed += 1
+                
+                if st.session_state.get("show_debug", False) and files_removed > 0:
+                    st.info(f"🗑️ Debug: {files_removed} arquivo(s) temporário(s) removido(s)")
+                    
             except Exception as cleanup_error:
                 st.warning(f"⚠️ Erro ao limpar arquivos temporários: {cleanup_error}")
 
@@ -340,8 +379,68 @@ def main():
     # Load reports from DynamoDB
     reports_data = load_reports_from_dynamodb()
 
-    # Debug info
-    if st.sidebar.checkbox("Debug Info"):
+    # Debug info in sidebar
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("### 🔍 Debug Information")
+    
+    if st.sidebar.checkbox("Show Debug Info", key="show_debug"):
+        st.sidebar.write(f"**Total reports:** {len(reports_data)}")
+        active_count = len([r for r in reports_data.values() if not r["deletado"]])
+        deleted_count = len(reports_data) - active_count
+        st.sidebar.write(f"**Active reports:** {active_count}")
+        st.sidebar.write(f"**Deleted reports:** {deleted_count}")
+        
+        # AWS Client Status
+        st.sidebar.write("**AWS Clients:**")
+        st.sidebar.write(f"  - S3 Client: {'✅ OK' if s3_client else '❌ Failed'}")
+        st.sidebar.write(f"  - DynamoDB: {'✅ OK' if table else '❌ Failed'}")
+        st.sidebar.write(f"  - S3FS: {'✅ OK' if fs else '❌ Failed'}")
+        
+        # Environment Info
+        st.sidebar.write("**Environment:**")
+        st.sidebar.write(f"  - Region: {AWS_REGION}")
+        st.sidebar.write(f"  - S3 Bucket: {S3_BUCKET}")
+        st.sidebar.write(f"  - DynamoDB Table: {DYNAMODB_TABLE}")
+        
+        # Temp Directory Status
+        tmp_dir = os.path.join(os.getcwd(), "tmp")
+        tmp_exists = os.path.exists(tmp_dir)
+        st.sidebar.write(f"**Temp Directory:** {'✅ Exists' if tmp_exists else '❌ Missing'}")
+        
+        if tmp_exists:
+            try:
+                tmp_files = os.listdir(tmp_dir)
+                st.sidebar.write(f"  - Files in tmp/: {len(tmp_files)}")
+                if tmp_files:
+                    st.sidebar.write("  - Files:")
+                    for file in tmp_files[:5]:  # Show max 5 files
+                        st.sidebar.write(f"    • {file}")
+                    if len(tmp_files) > 5:
+                        st.sidebar.write(f"    • ... and {len(tmp_files) - 5} more")
+            except Exception as e:
+                st.sidebar.write(f"  - Error reading tmp/: {e}")
+    
+    # Advanced Debug Options
+    if st.sidebar.checkbox("Advanced Debug", key="advanced_debug"):
+        st.sidebar.markdown("#### 📊 Report Details")
+        for report_id, report in list(reports_data.items())[:3]:  # Show first 3 reports
+            status = "🗑️ DELETED" if report['deletado'] else "✅ ACTIVE"
+            st.sidebar.write(f"**{report_id}:** {status}")
+            st.sidebar.write(f"  - Title: {report['titulo'][:20]}...")
+            st.sidebar.write(f"  - Author: {report['autor'][:15]}...")
+            st.sidebar.write(f"  - S3 Path: {report['id_s3']}")
+        
+        if len(reports_data) > 3:
+            st.sidebar.write(f"... and {len(reports_data) - 3} more reports")
+    
+    # Error Debug (only show if there were errors)
+    if st.sidebar.checkbox("Error Debug", key="error_debug"):
+        st.sidebar.markdown("#### 🐛 Error Information")
+        st.sidebar.write("Enable this to see detailed error traces when they occur.")
+        st.sidebar.write("Errors will be displayed in the main area.")
+
+    # Old debug info (keep for compatibility)
+    if st.sidebar.checkbox("Legacy Debug Info", key="legacy_debug"):
         st.sidebar.write(f"Total reports: {len(reports_data)}")
         active_count = len([r for r in reports_data.values() if not r["deletado"]])
         st.sidebar.write(f"Active reports: {active_count}")
