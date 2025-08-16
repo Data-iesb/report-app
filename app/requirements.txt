@@ -12,6 +12,7 @@ geopandas>=0.14
 shapely>=2.0
 folium
 streamlit-folium
+matplotlib
 
 #numpy
 #pydeck 
