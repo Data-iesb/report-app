@@ -1,6 +1,5 @@
-/* Minimal CSS - Only Essential Styling */
+/* Minimal CSS - Report Header + Sidebar Text Fix */
 
-/* Report header template styling */
 .report-header {
     background: linear-gradient(135deg, #1D345B 0%, #2C5282 100%);
     color: white;
@@ -14,11 +13,7 @@
     color: white !important;
 }
 
-/* Sidebar white text */
-section[data-testid="stSidebar"] {
-    background-color: #1D345B;
-}
-
+/* CRITICAL: Sidebar text must be white on blue background */
 section[data-testid="stSidebar"] * {
     color: white !important;
 }

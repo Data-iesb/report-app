@@ -1,7 +1,45 @@
 [theme]
-primaryColor = "#D13F42"               # Azul escuro
-backgroundColor = "#FFFFFF"            # Fundo geral branco
-secondaryBackgroundColor = "#1D345B"   # Sidebar e menus escuros
-textColor = "#1D345B"                  # Texto azul escuro (visível em fundo claro)
+# MIV Colors - Blue sidebar with white text
+primaryColor = "#D13F42"               # MIV Red - buttons and accents
+backgroundColor = "#FFFFFF"            # MIV White - main background
+secondaryBackgroundColor = "#1D345B"   # MIV Blue - sidebar (MUST be blue)
+textColor = "#1D345B"                  # MIV Blue - main content text
 font = "sans serif"
 
+# Critical settings for text visibility
+base = "light"                         # Force light theme
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+showSidebarNavigation = true
+
+[runner]
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+fastReruns = true
+
+[logger]
+level = "error"
+enableLogging = false
+
+[deprecation]
+showPyplotGlobalUse = false
+showfileUploaderEncoding = false
+
+[global]
+developmentMode = false
+suppressDeprecationWarnings = true
+showWarningOnDirectExecution = false
