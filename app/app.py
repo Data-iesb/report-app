@@ -103,12 +103,8 @@ def render_dashboard_footer(report_data):
             st.markdown(f"**🔄 Atualizado em:** {updated_date}")
 
 def apply_custom_styles():
-    """Apply minimal CSS - TOML + CSS for sidebar text visibility"""
-    # Load CSS for report header and sidebar text fix
+    """Apply only report header CSS - let TOML handle everything else"""
     load_css_file("style.css")
-    
-    # NO additional CSS that could interfere with graphs
-    # TOML config handles main content, CSS fixes sidebar
 
 def check_local_main():
     """Check if there's a local main.py file for development"""

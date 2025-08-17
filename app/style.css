@@ -1,5 +1,4 @@
-/* Minimal CSS - Report Header + Sidebar Text Fix */
-
+/* Only report header + sidebar text fix + white text editors */
 .report-header {
     background: linear-gradient(135deg, #1D345B 0%, #2C5282 100%);
     color: white;
@@ -13,7 +12,14 @@
     color: white !important;
 }
 
-/* CRITICAL: Sidebar text must be white on blue background */
+/* Fix invisible sidebar text */
 section[data-testid="stSidebar"] * {
     color: white !important;
+}
+
+/* White background for text editors with black text */
+.stTextArea textarea,
+.stTextInput input {
+    background-color: white !important;
+    color: black !important;
 }
