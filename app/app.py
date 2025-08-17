@@ -13,7 +13,7 @@ DYNAMODB_TABLE = "dataiesb-reports"
 AWS_REGION = "us-east-1"
 
 # Debugging variable - set to False to disable debug output
-debugging_bol = True
+debugging_bol = False
 
 def render_dashboard_header(report_data):
     """Render the dashboard header with title and description"""
@@ -72,6 +72,61 @@ def render_dashboard_footer(report_data):
     with col3:
         if updated_date:
             st.markdown(f"**🔄 Atualizado em:** {updated_date}")
+
+def apply_custom_styles():
+    """Apply custom CSS styles to the Streamlit app"""
+    # Load external CSS file
+    load_css_file("style.css")
+    
+    # Apply button styling but exclude canvas-based content like maps
+    st.markdown("""
+    <style>
+    /* Style buttons but exclude any elements inside canvas containers */
+    .stButton > button:not([data-canvas]):not([class*="canvas"]) {
+        background-color: #2C5282 !important;
+        color: white !important;
+        border: 1px solid #2C5282 !important;
+        border-radius: 6px !important;
+    }
+    
+    .stButton > button:not([data-canvas]):not([class*="canvas"]):hover {
+        background-color: #1D345B !important;
+        color: white !important;
+        border-color: #1D345B !important;
+    }
+    
+    /* Exclude all canvas-related elements from any button styling */
+    canvas,
+    canvas *,
+    [class*="canvas"],
+    [class*="canvas"] *,
+    [id*="canvas"],
+    [id*="canvas"] *,
+    .leaflet-container,
+    .leaflet-container *,
+    .folium-map,
+    .folium-map *,
+    iframe,
+    iframe * {
+        all: revert !important;
+    }
+    
+    /* Specifically protect canvas buttons and controls */
+    canvas button,
+    canvas input,
+    canvas a,
+    [class*="canvas"] button,
+    [class*="canvas"] input,
+    [class*="canvas"] a {
+        background: initial !important;
+        color: initial !important;
+        border: initial !important;
+        border-radius: initial !important;
+        font-weight: initial !important;
+        box-shadow: initial !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
 def check_local_main():
     """Check if there's a local main.py file for development"""
@@ -478,8 +533,8 @@ def show_homepage(reports_data):
 def main():
     st.set_page_config(page_title="Central de Relatórios", layout="wide")
     
-    # Load CSS file
-    load_css_file("style.css")
+    # Apply custom styling
+    apply_custom_styles()
     
     # Clean up old temporary files on startup
     cleanup_old_temp_files()
