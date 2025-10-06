@@ -23,7 +23,6 @@ This repository is part of the larger **Big Data IESB Project** ecosystem:
 report-app/
 ├── app/                        # Main Streamlit application
 │   ├── app.py                 # Primary dashboard application
-│   ├── test_app.py            # Application tests
 │   ├── requirements.txt       # Python dependencies
 │   ├── style.css             # Custom styling
 │   ├── .streamlit/           # Streamlit configuration
@@ -39,7 +38,6 @@ report-app/
 ├── Dockerfile-EKS           # EKS deployment container
 ├── requirements.txt         # Root dependencies
 ├── buildspec.yml           # AWS CodeBuild configuration
-├── test_dynamodb.py        # DynamoDB connection tests
 ├── install.sh              # Installation script
 ├── reinstall.sh            # Reinstallation script
 └── uninstall.sh            # Cleanup script
@@ -95,14 +93,7 @@ kubectl apply -f eks/service.yaml
 
 ## Infrastructure Management
 
-### Testing
-```bash
-# Test DynamoDB connection
-python test_dynamodb.py
-
-# Test application
-python app/test_app.py
-```
+The application is deployed to Amazon EKS cluster `sas-6881323-eks` with automatic scaling and load balancing.
 
 ## About IESB
 
