@@ -35,9 +35,6 @@ report-app/
 │   ├── eksctl-sa.sh         # Service account setup
 │   ├── s3-policy-fix.json   # S3 access policies
 │   └── s3-policy-updated.json
-├── iaac/                     # Infrastructure as Code
-│   ├── dynamodb.sh          # DynamoDB table creation
-│   └── make-public.sh       # S3 bucket configuration
 ├── Dockerfile-Local          # Local development container
 ├── Dockerfile-EKS           # EKS deployment container
 ├── requirements.txt         # Root dependencies
@@ -97,18 +94,6 @@ kubectl apply -f eks/service.yaml
 ```
 
 ## Infrastructure Management
-
-### DynamoDB Setup
-```bash
-# Create required DynamoDB tables
-./iaac/dynamodb.sh
-```
-
-### S3 Configuration
-```bash
-# Configure S3 bucket permissions
-./iaac/make-public.sh
-```
 
 ### Testing
 ```bash
