@@ -1,0 +1,25 @@
+# Example TOML configuration for a report
+# This file would be stored as {report_id}/config.toml in S3
+
+[theme]
+# Theme mode: "light" or "dark"
+mode = "dark"                     # Set to "dark" for dark mode, "light" for light mode
+primaryColor = "#D13F42"          # Red for buttons and highlights
+backgroundColor = "#0E1117"       # Dark background (dark mode)
+secondaryBackgroundColor = "#262730"  # Dark gray for secondary areas (dark mode)
+textColor = "#FAFAFA"            # Light text for dark mode
+font = "sans serif"              # Font family
+base = "dark"                    # Streamlit base theme
+
+# Light mode alternative (comment out dark mode above and uncomment below)
+# backgroundColor = "#FFFFFF"        # White background (light mode)
+# secondaryBackgroundColor = "#E4E4E4"  # Light gray for secondary areas (light mode)
+# textColor = "#1D345B"             # Dark blue for text (light mode)
+# base = "light"                    # Streamlit base theme
+
+[server]
+headless = true
+port = 8501
+
+[browser]
+gatherUsageStats = false

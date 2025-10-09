@@ -1,0 +1,73 @@
+# Complete TOML configuration for Report 9
+# Supports both light and dark modes
+
+[theme]
+# Theme mode: "light" or "dark"
+mode = "dark"                     # Current active mode
+
+# Dark Mode Settings
+[theme.dark]
+primaryColor = "#D13F42"          # MIV Red - buttons and highlights
+backgroundColor = "#0E1117"       # Dark background
+secondaryBackgroundColor = "#262730"  # Dark sidebar/secondary areas
+textColor = "#FAFAFA"            # Light text for readability
+font = "sans serif"
+base = "dark"
+
+# Light Mode Settings  
+[theme.light]
+primaryColor = "#D13F42"          # MIV Red - buttons and highlights
+backgroundColor = "#FFFFFF"       # White background
+secondaryBackgroundColor = "#1D345B"  # MIV Blue sidebar
+textColor = "#1D345B"            # MIV Blue text
+font = "sans serif"
+base = "light"
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+showSidebarNavigation = true
+
+[runner]
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+fastReruns = true
+
+[logger]
+level = "error"
+enableLogging = false
+
+[deprecation]
+showPyplotGlobalUse = false
+showfileUploaderEncoding = false
+
+[global]
+developmentMode = false
+suppressDeprecationWarnings = true
+showWarningOnDirectExecution = false
+
+# Report-specific settings
+[report]
+id = 9
+name = "Report 9 - Dark Mode Example"
+version = "1.0.0"
+author = "Report Team"
+description = "Example report with dark mode support"
+
+# Chart settings optimized for both themes
+[charts]
+default_color_sequence = ["#D13F42", "#1D345B", "#E4E4E4", "#FAFAFA"]
+dark_mode_adjustments = true
+transparent_backgrounds = true

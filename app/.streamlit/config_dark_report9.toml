@@ -1,0 +1,45 @@
+[theme]
+# Dark Mode Configuration for Report 9
+primaryColor = "#D13F42"               # MIV Red - buttons and accents
+backgroundColor = "#0E1117"            # Dark background
+secondaryBackgroundColor = "#262730"   # Dark sidebar/secondary areas
+textColor = "#FAFAFA"                  # Light text for readability
+font = "sans serif"
+
+# Critical settings for dark theme
+base = "dark"                          # Force dark theme
+
+[server]
+headless = true
+port = 8501
+enableCORS = false
+enableXsrfProtection = true
+maxUploadSize = 200
+
+[browser]
+gatherUsageStats = false
+serverAddress = "0.0.0.0"
+
+[client]
+toolbarMode = "minimal"
+showErrorDetails = true
+showSidebarNavigation = true
+
+[runner]
+magicEnabled = true
+installTracer = false
+fixMatplotlib = true
+fastReruns = true
+
+[logger]
+level = "error"
+enableLogging = false
+
+[deprecation]
+showPyplotGlobalUse = false
+showfileUploaderEncoding = false
+
+[global]
+developmentMode = false
+suppressDeprecationWarnings = true
+showWarningOnDirectExecution = false

@@ -14,8 +14,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     gcc
 
-# Set work directory and copy app
+# Set work directory and copy files
 WORKDIR /app
+COPY requirements.txt ./
 COPY app/ ./
 
 # Install all dependencies (including streamlit) globally
