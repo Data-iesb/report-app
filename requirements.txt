@@ -1,10 +1,11 @@
 boto3
 streamlit
 pandas
+sklearn
 plotly
 #numpy
 #pydeck 
 #scipy 
-#psycopg2-binary
+psycopg2-binary
 #sqlalchemy
 #folium
