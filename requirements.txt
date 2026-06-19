@@ -3,8 +3,8 @@ streamlit
 pandas
 plotly
 plotly.express
-fsspec 
-s3fs
+fsspec>=2024.2.0
+s3fs>=2024.2.0
 psycopg2-binary
 sqlalchemy
 altair>=5.2

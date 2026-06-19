@@ -35,10 +35,10 @@ import pandas as pd
 import boto3
 import json
 import tempfile
-import s3fs
 import os
 import shutil
 import time
+import gc
 
 S3_BUCKET = "dataiesb-reports"
 DYNAMODB_TABLE = "dataiesb-reports"
@@ -199,14 +199,22 @@ try:
     dynamodb = boto3.resource('dynamodb', region_name=AWS_REGION)
     table = dynamodb.Table(DYNAMODB_TABLE)
     
-    # Initialize S3 file system for pandas
-    fs = s3fs.S3FileSystem()
+    # S3 file system initialized lazily on first use
+    _fs = None
 except Exception as e:
     st.error(f"❌ Erro ao inicializar clientes AWS: {e}")
     s3_client = None
     dynamodb = None
     table = None
-    fs = None
+    _fs = None
+
+def get_s3fs():
+    """Lazy-load s3fs to save ~50MB on startup"""
+    global _fs
+    if _fs is None:
+        import s3fs
+        _fs = s3fs.S3FileSystem()
+    return _fs
 
 def cleanup_old_temp_files():
     """Clean up old temporary files on startup"""
@@ -338,8 +346,8 @@ def load_and_execute_report(report_id, reports_data):
             "s3_client": s3_client,
             "S3_BUCKET": S3_BUCKET,
             "AWS_REGION": AWS_REGION,
-            "s3fs": s3fs,
-            "fs": fs,
+            "s3fs": __import__('s3fs'),
+            "fs": get_s3fs(),
             "os": os,
             "tempfile": tempfile
         }
@@ -362,17 +370,20 @@ def load_and_execute_report(report_id, reports_data):
         st.error(f"❌ Erro ao carregar o relatório '{report_id}': {e}")
             
     finally:
-        # Clean up temporary files
+        # Clean up temporary files and free memory
         if tmp_dir and os.path.exists(tmp_dir):
             try:
-                # Remove all files in tmp directory
                 for filename in os.listdir(tmp_dir):
                     file_path = os.path.join(tmp_dir, filename)
                     if os.path.isfile(file_path):
                         os.remove(file_path)
-                    
-            except Exception as cleanup_error:
-                pass  # Silent cleanup
+            except Exception:
+                pass
+        try:
+            del exec_globals
+        except NameError:
+            pass
+        gc.collect()
 
 def show_homepage(reports_data):
     st.title("Central de Relatórios Dinâmicos 📊")
