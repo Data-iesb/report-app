@@ -1,0 +1,20 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dash-report-app-ingress
+  namespace: default
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: app.dataiesb.com
+    http:
+      paths:
+      - path: /report
+        pathType: Prefix
+        backend:
+          service:
+            name: dash-report-app
+            port:
+              number: 8501

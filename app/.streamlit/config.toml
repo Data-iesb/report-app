@@ -1,13 +1,11 @@
 [theme]
-# MIV Colors - Blue sidebar with white text
-primaryColor = "#D13F42"               # MIV Red - buttons and accents
-backgroundColor = "#FFFFFF"            # MIV White - main background
-secondaryBackgroundColor = "#1D345B"   # MIV Blue - sidebar (MUST be blue)
-textColor = "#1D345B"                  # MIV Blue - main content text
+primaryColor = "#D13F42"
+backgroundColor = "#1a1a1a"
+secondaryBackgroundColor = "#2d2d2d"
+textColor = "#FFFFFF"
 font = "sans serif"
 
-# Critical settings for text visibility
-base = "light"                         # Force light theme
+base = "dark"
 
 [server]
 headless = true

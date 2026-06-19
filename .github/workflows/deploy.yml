@@ -1,0 +1,41 @@
+name: Deploy to EKS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  ECR_REPO: 248189947068.dkr.ecr.us-east-1.amazonaws.com/report-app
+  DEPLOYMENT: dash-report-app
+  NAMESPACE: dashs
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: us-east-1
+
+      - uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push
+        run: |
+          TAG=${{ github.sha }}
+          docker build -t $ECR_REPO:$TAG -t $ECR_REPO:latest .
+          docker push $ECR_REPO:$TAG
+          docker push $ECR_REPO:latest
+
+      - name: Deploy to EKS
+        run: |
+          aws eks update-kubeconfig --name dataiesb-cluster --region us-east-1
+          kubectl set image deployment/$DEPLOYMENT $DEPLOYMENT=$ECR_REPO:${{ github.sha }} -n $NAMESPACE
+          kubectl rollout status deployment/$DEPLOYMENT -n $NAMESPACE --timeout=120s

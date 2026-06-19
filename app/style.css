@@ -1,6 +1,5 @@
-/* Only report header + sidebar text fix + white text editors */
 .report-header {
-    background: linear-gradient(135deg, #1D345B 0%, #2C5282 100%);
+    background: linear-gradient(135deg, #D13F42 0%, #a02e30 100%);
     color: white;
     padding: 30px 20px;
     border-radius: 12px;
@@ -12,14 +11,12 @@
     color: white !important;
 }
 
-/* Fix invisible sidebar text */
-section[data-testid="stSidebar"] * {
-    color: white !important;
+section[data-testid="stSidebar"] {
+    background-color: #2d2d2d;
 }
 
-/* White background for text editors with black text */
 .stTextArea textarea,
 .stTextInput input {
-    background-color: white !important;
-    color: black !important;
+    background-color: #2d2d2d !important;
+    color: white !important;
 }

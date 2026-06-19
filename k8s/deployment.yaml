@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dash-report-app
+  namespace: dashs
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dash-report-app
+  template:
+    metadata:
+      labels:
+        app: dash-report-app
+    spec:
+      serviceAccountName: dataiesb-dashs
+      containers:
+      - name: dash-report-app
+        image: 248189947068.dkr.ecr.us-east-1.amazonaws.com/report-app:latest
+        imagePullPolicy: Always
+        env:
+        - name: AWS_DEFAULT_REGION
+          value: us-east-1
+        ports:
+        - containerPort: 8501
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            cpu: "1"
+            memory: 1Gi
+        readinessProbe:
+          httpGet:
+            path: /report/
+            port: 8501
+          initialDelaySeconds: 10
+          periodSeconds: 5
+        livenessProbe:
+          httpGet:
+            path: /report/
+            port: 8501
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        startupProbe:
+          httpGet:
+            path: /report/
+            port: 8501
+          failureThreshold: 12
+          periodSeconds: 10
