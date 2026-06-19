@@ -555,6 +555,8 @@ def main():
     .site-navbar .nav-cta:hover { background: #ff4d5a; }
     .site-navbar .nav-aurya { color: #ff4d5a !important; font-weight: 600; border: 1px solid rgba(227,6,19,.4); padding: 4px 12px; border-radius: 4px; font-size: .8rem; }
     [data-testid="stAppViewContainer"] { margin-top: 64px; }
+    [data-testid="stSidebar"] { margin-top: 64px; z-index: 10000; }
+    [data-testid="collapsedControl"] { margin-top: 64px; z-index: 10000; }
     [data-testid="stHeader"] { display: none; }
     </style>
     <div class="site-navbar">
