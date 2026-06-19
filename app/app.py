@@ -523,7 +523,7 @@ def main():
     st.set_page_config(
         page_title="Central de Relatórios", 
         layout="wide",
-        initial_sidebar_state="expanded"
+        initial_sidebar_state="collapsed"
     )
     
     # Apply minimal styling - TOML handles text visibility
