@@ -11,8 +11,8 @@ permissions:
 
 env:
   ECR_REPO: 248189947068.dkr.ecr.us-east-1.amazonaws.com/report-app
-  DEPLOYMENT: dash-report-app
-  NAMESPACE: dashs
+  DEPLOYMENT: report-app
+  NAMESPACE: default
 
 jobs:
   deploy:
