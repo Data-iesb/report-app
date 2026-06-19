@@ -20,11 +20,14 @@
 }
 
 section[data-testid="stSidebar"] {
-    display: none;
+    background-color: #151515;
 }
 
 [data-testid="collapsedControl"] {
-    display: none;
+    color: #c8c8c8 !important;
+    background: rgba(255,255,255,.08);
+    border-radius: 8px;
+    padding: 8px;
 }
 
 .stTextArea textarea,
