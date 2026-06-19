@@ -532,17 +532,33 @@ def main():
     # Clean up old temporary files on startup
     cleanup_old_temp_files()
 
-    # Sidebar logo
-    logo_url = "https://d28lvm9jkyfotx.cloudfront.net/logo.png"
-    target_url = "https://dataiesb.com"
-    st.sidebar.markdown(
-        f"""
-        <a href="{target_url}" target="_blank">
-            <img src="{logo_url}" style="width:100%; margin-bottom: 2rem;">
-        </a>
-        """,
-        unsafe_allow_html=True
-    )
+    # Top navbar matching dataiesb.com
+    st.markdown("""
+    <style>
+    .site-navbar { position: fixed; top: 0; left: 0; right: 0; z-index: 9999; background: #2e2e2e; border-bottom: 1px solid rgba(255,255,255,.08); height: 64px; display: flex; align-items: center; padding: 0 24px; }
+    .site-navbar .nav-container { display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 1200px; margin: 0 auto; }
+    .site-navbar a { font-size: .875rem; font-weight: 500; color: #999; text-decoration: none; transition: color .2s; }
+    .site-navbar a:hover { color: #E30613; }
+    .site-navbar .nav-links { display: flex; gap: 32px; align-items: center; }
+    .site-navbar .nav-cta { background: #E30613; color: #fff !important; padding: 10px 20px; border-radius: 6px; font-weight: 600; }
+    .site-navbar .nav-cta:hover { background: #ff4d5a; }
+    .site-navbar .nav-aurya { color: #ff4d5a !important; font-weight: 600; border: 1px solid rgba(227,6,19,.4); padding: 4px 12px; border-radius: 4px; font-size: .8rem; }
+    [data-testid="stAppViewContainer"] { margin-top: 64px; }
+    [data-testid="stHeader"] { display: none; }
+    </style>
+    <div class="site-navbar">
+        <div class="nav-container">
+            <a href="https://dataiesb.com"><img src="https://d28lvm9jkyfotx.cloudfront.net/logo.png" alt="DataIESB" style="height:32px;"></a>
+            <div class="nav-links">
+                <a href="https://aurya.dataiesb.com" target="_blank" class="nav-aurya">Assistente IA</a>
+                <a href="https://dataiesb.com/#projects">Painéis e Estudos</a>
+                <a href="https://dataiesb.com/quem-somos.html">Quem somos</a>
+                <a href="https://dataiesb.com/parceiros.html">Parceiros</a>
+                <a href="https://dataiesb.com/contato.html" class="nav-cta">Contato</a>
+            </div>
+        </div>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Load reports from DynamoDB
     reports_data = load_reports_from_dynamodb()
