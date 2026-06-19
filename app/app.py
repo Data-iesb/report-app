@@ -104,7 +104,7 @@ def render_dashboard_footer(report_data):
 
 def apply_custom_styles():
     """Apply only report header CSS - let TOML handle everything else"""
-    load_css_file("style.css")
+    load_css_file(os.path.join(os.path.dirname(__file__), "style.css"))
 
 def check_local_main():
     """Check if there's a local main.py file for development"""
