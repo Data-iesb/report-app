@@ -36,11 +36,13 @@ html, body, [class*="st-"] {
 }
 
 .report-header h1 {
-    color: #fff !important;
-    font-weight: 600;
+    color: #E30613 !important;
+    font-family: 'Space Mono', monospace !important;
+    font-weight: 700;
     font-size: 1.4rem !important;
     margin-bottom: .3rem;
-    letter-spacing: -0.02em;
+    letter-spacing: .02em;
+    text-transform: uppercase;
 }
 
 .report-header p {
@@ -54,6 +56,11 @@ html, body, [class*="st-"] {
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
+}
+
+/* Hide green success banners */
+[data-testid="stAlert"] {
+    display: none;
 }
 
 /* Sidebar */
